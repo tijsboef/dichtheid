@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oefenen met Dichtheid</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="container">
+        <h1>Oefenen met Dichtheid 密度</h1>
+        <p>Gebruik de simulatie om de vragen te beantwoorden.</p>
+    </header>
+
+    <main class="container">
+        <section class="simulation-container">
+            <h2>Interactieve Simulatie</h2>
+            <iframe src="https://phet.colorado.edu/sims/html/density/latest/density_nl.html"
+                    width="100%"
+                    height="500"
+                    allowfullscreen>
+            </iframe>
+        </section>
+
+        <section class="exercises-container">
+            <h2>Vragen</h2>
+            <div id="exercise-set"></div>
+            <button id="check-answers" class="btn-primary">Controleer Antwoorden</button>
+            <button id="new-set" class="btn-secondary">Nieuwe Vragen</button>
+        </section>
+    </main>
+
+    <footer class="container">
+        <p>Styling gebaseerd op de Styling System Documentatie.</p>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
