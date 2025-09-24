@@ -102,18 +102,19 @@ document.addEventListener('DOMContentLoaded', () => {
         currentExercises.forEach((exercise, index) => {
             const exerciseElement = document.createElement('div');
             exerciseElement.classList.add('exercise');
-            exerciseElement.innerHTML = \`
-                <label for="q\${index}">\${index + 1}. \${exercise.question}</label>
-                <input type="text" id="q\${index}" placeholder="Antwoord">
+            // FIX: De backslashes (\) voor de backticks zijn hier verwijderd.
+            exerciseElement.innerHTML = `
+                <label for="q${index}">${index + 1}. ${exercise.question}</label>
+                <input type="text" id="q${index}" placeholder="Antwoord">
                 <div class="feedback"></div>
-            \`;
+            `;
             exerciseSetContainer.appendChild(exerciseElement);
         });
     }
 
     function checkAnswers() {
         currentExercises.forEach((exercise, index) => {
-            const input = document.getElementById(\`q\${index}\`);
+            const input = document.getElementById(`q${index}`);
             const feedback = input.nextElementSibling;
             
             const userAnswer = input.value.trim().toLowerCase().replace(',', '.');
@@ -122,10 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
             feedback.style.display = 'block';
 
             if (userAnswer === correctAnswer) {
-                feedback.textContent = \`Correct! Het antwoord is \${exercise.answer} \${exercise.unit}.\`;
+                feedback.textContent = `Correct! Het antwoord is ${exercise.answer} ${exercise.unit}.`;
                 feedback.className = 'feedback correct';
             } else {
-                feedback.textContent = \`Helaas, het juiste antwoord is \${exercise.answer} \${exercise.unit}.\`;
+                feedback.textContent = `Helaas, het juiste antwoord is ${exercise.answer} ${exercise.unit}.`;
                 feedback.className = 'feedback incorrect';
             }
         });
