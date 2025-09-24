@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { type: 'mc', vraag: "Wat is de definitie van dichtheid?", opties: ["Hoe zwaar een stof is", "De massa per volume-eenheid", "Hoeveel ruimte een stof inneemt"], antwoord: "De massa per volume-eenheid" },
         { type: 'formula', vraag: "Vul de formule voor dichtheid correct in:", antwoord: "dichtheid=massa/volume" },
         { type: 'mc', vraag: "In welke eenheid wordt dichtheid vaak uitgedrukt in de natuurkunde?", opties: ["kg/L", "g/cm³", "mg/mL"], antwoord: "g/cm³" },
-        { type: 'sort', vraag: "Zet het stappenplan voor een berekening in de juiste volgorde:", stappen: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord en eenheid noteren"], antwoord: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord en eenheid noteren" }
+        { type: 'sort', vraag: "Zet het stappenplan voor een berekening in de juiste volgorde:", stappen: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord en eenheid noteren"], antwoord: "gegevens noteren,formule noteren,formule invullen,antwoord en eenheid noteren" }
     ];
     
     const metingen = {
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // --- AANGEPASTE VRAGEN GENERATOR VOOR SECTIE 1 ---
+    // --- VRAGEN GENERATOR VOOR SECTIE 1 ---
     function laadTheorieVragen() {
         const container = document.getElementById('theorie-vragen');
         container.innerHTML = '';
@@ -84,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 html += `<div class="formula-container" id="q-theorie-${i}">${createSelect()} = ${createSelect()} / ${createSelect()}</div>`;
             } else if (q.type === 'sort') {
                 let shuffled = [...q.stappen];
-                // Blijf schudden totdat de volgorde niet de juiste is
-                while (shuffled.join(',') === q.antwoord) {
+                const correctOrderString = q.stappen.join(',');
+                while (shuffled.join(',') === correctOrderString) {
                     shuffled.sort(() => Math.random() - 0.5);
                 }
                 html += `<div class="drop-container" id="q-theorie-${i}">
@@ -141,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-
     // --- VRAGEN GENEREREN (SECTIE 2 & 3) ---
     function laadSimulatieVragen(setNum) {
         const container = document.getElementById('simulatie-vragen');
@@ -164,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function laadControleVragen() {
         const container = document.getElementById('controle-vragen');
+        container.innerHTML = ''; // Maak container leeg voor nieuwe vragen
         const alleMetingen = [...metingen.set1, ...metingen.set2, ...metingen.set3];
         const randomVragen = alleMetingen.sort(() => 0.5 - Math.random()).slice(0, 4); 
         randomVragen.forEach((q, i) => {
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- AANGEPASTE CONTROLE LOGICA ---
+    // --- CONTROLE LOGICA ---
     checkBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const sectie = e.target.dataset.section;
@@ -192,7 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     userAnswer = `${selects[0].value}=${selects[1].value}/${selects[2].value}`;
                 } else if (ex.querySelector('.drop-container')) {
                     const items = ex.querySelectorAll('.target-list .draggable');
-                    userAnswer = Array.from(items).map(item => item.textContent).join(',');
+                    // GECOORIGEERDE REGEL: Zorgt voor correcte vergelijking
+                    userAnswer = Array.from(items).map(item => item.textContent.toLowerCase()).join(',');
                 } else {
                     const input = ex.querySelector('input, select');
                     if (input) userAnswer = input.value.toLowerCase().trim().replace(',', '.');
