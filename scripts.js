@@ -12,29 +12,23 @@ document.addEventListener('DOMContentLoaded', () => {
         { stof: "Kurk", dichtheid: "0.25" }, { stof: "Kwik", dichtheid: "13.5" },
     ];
 
+    // --- AANGEPASTE VRAGEN VOOR SECTIE 1 ---
     const theorieVragen = [
-        { type: 'mc', vraag: "Wat is de definitie van dichtheid?", opties: ["Hoe zwaar iets is", "Hoe groot iets is", "De massa per volume-eenheid"], antwoord: "De massa per volume-eenheid" },
-        { type: 'open', vraag: "Wat is de formule voor dichtheid?", antwoord: "dichtheid = massa / volume" },
-        { type: 'open', vraag: "In welke eenheid wordt dichtheid vaak uitgedrukt?", antwoord: "g/cm³" },
+        { type: 'mc', vraag: "Wat is de definitie van dichtheid?", opties: ["Hoe zwaar een stof is", "De massa per volume-eenheid", "Hoeveel ruimte een stof inneemt"], antwoord: "De massa per volume-eenheid" },
+        { type: 'formula', vraag: "Vul de formule voor dichtheid correct in:", antwoord: "dichtheid=massa/volume" },
+        { type: 'mc', vraag: "In welke eenheid wordt dichtheid vaak uitgedrukt in de natuurkunde?", opties: ["kg/L", "g/cm³", "mg/mL"], antwoord: "g/cm³" },
         { type: 'sort', vraag: "Zet het stappenplan voor een berekening in de juiste volgorde:", stappen: ["Formule invullen", "Gegevens noteren", "Antwoord en eenheid noteren", "Formule noteren"], antwoord: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord en eenheid noteren"] }
     ];
     
-    // Jouw metingen voor simulatie- en controlevragen
     const metingen = {
         set1: [
-            { id: '1A', kleur: 'Paars', massa: 19.3, volume: 5.5, dichtheid: '3.51' },
-            { id: '1B', kleur: 'Blauw', massa: 0.4, volume: 1, dichtheid: '0.40' },
-            { id: '1C', kleur: 'Geel', massa: 19.32, volume: 1, dichtheid: '19.32' },
+            { id: '1A', kleur: 'Paars', massa: 19.3, volume: 5.5, dichtheid: '3.51' }, { id: '1B', kleur: 'Blauw', massa: 0.4, volume: 1, dichtheid: '0.40' }, { id: '1C', kleur: 'Geel', massa: 19.32, volume: 1, dichtheid: '19.32' },
         ],
         set2: [
-            { id: '2A', kleur: 'Lichtbruin', massa: 18, volume: 1.59, dichtheid: '11.32' },
-            { id: '2B', kleur: 'Donkerbruin', massa: 10.8, volume: 4, dichtheid: '2.70' },
-            { id: '2C', kleur: 'Groen', massa: 2.7, volume: 1, dichtheid: '2.70' },
+            { id: '2A', kleur: 'Lichtbruin', massa: 18, volume: 1.59, dichtheid: '11.32' }, { id: '2B', kleur: 'Donkerbruin', massa: 10.8, volume: 4, dichtheid: '2.70' }, { id: '2C', kleur: 'Groen', massa: 2.7, volume: 1, dichtheid: '2.70' },
         ],
         set3: [
-            { id: '3A', kleur: 'Bordeaux', massa: 2.85, volume: 3, dichtheid: '0.95' },
-            { id: '3B', kleur: 'Grijs', massa: 6, volume: 6, dichtheid: '1.00' },
-            { id: '3C', kleur: 'Beige', massa: 23.4, volume: 3, dichtheid: '7.80' },
+            { id: '3A', kleur: 'Bordeaux', massa: 2.85, volume: 3, dichtheid: '0.95' }, { id: '3B', kleur: 'Grijs', massa: 6, volume: 6, dichtheid: '1.00' }, { id: '3C', kleur: 'Beige', massa: 23.4, volume: 3, dichtheid: '7.80' },
         ]
     };
     
@@ -65,42 +59,98 @@ document.addEventListener('DOMContentLoaded', () => {
             huidigeSectieIndex++;
             secties[huidigeSectieIndex].style.display = 'block';
             if (huidigeSectieIndex === secties.length - 1) {
-                volgendeBtn.style.display = 'none'; // Verberg knop op laatste sectie
+                volgendeBtn.style.display = 'none';
             }
         }
     });
     
-    // --- VRAGEN GENEREREN ---
+    // --- AANGEPASTE VRAGEN GENERATOR VOOR SECTIE 1 ---
     function laadTheorieVragen() {
         const container = document.getElementById('theorie-vragen');
+        container.innerHTML = '';
         theorieVragen.forEach((q, i) => {
-            let html = `<div class="exercise" data-answer="${q.antwoord}"><label>${i + 1}. ${q.vraag}</label>`;
+            let html = `<div class="exercise" id="theorie-ex-${i}" data-answer="${q.antwoord}"><label>${i + 1}. ${q.vraag}</label>`;
             if (q.type === 'mc') {
                 html += `<select id="q-theorie-${i}"><option value="">Kies een antwoord</option>`;
                 q.opties.forEach(optie => html += `<option value="${optie}">${optie}</option>`);
                 html += `</select>`;
-            } else if (q.type === 'open') {
-                 html += `<input type="text" id="q-theorie-${i}" placeholder="Jouw antwoord">`;
-            } // Sleepvraag is complex, voor nu een open vraag als alternatief
+            } else if (q.type === 'formula') {
+                html += `<div class="formula-container" id="q-theorie-${i}">
+                    <select><option>dichtheid</option><option>massa</option><option>volume</option></select> =
+                    <select><option>massa</option><option>dichtheid</option><option>volume</option></select> /
+                    <select><option>volume</option><option>massa</option><option>dichtheid</option></select>
+                </div>`;
+            } else if (q.type === 'sort') {
+                const shuffled = [...q.stappen].sort(() => Math.random() - 0.5);
+                html += `<div class="drop-container" id="q-theorie-${i}">
+                            <div class="source-list">
+                                ${shuffled.map(stap => `<div class="draggable" draggable="true">${stap}</div>`).join('')}
+                            </div>
+                            <div class="target-list"></div>
+                         </div>`;
+            }
             html += `<div class="feedback"></div></div>`;
             container.innerHTML += html;
         });
+        setupDragAndDrop();
+    }
+    
+    // --- SLEEPVRAAG FUNCTIONALITEIT ---
+    function setupDragAndDrop() {
+        const draggables = document.querySelectorAll('.draggable');
+        const containers = document.querySelectorAll('.source-list, .target-list');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', () => draggable.classList.add('dragging'));
+            draggable.addEventListener('dragend', () => draggable.classList.remove('dragging'));
+        });
+
+        containers.forEach(container => {
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(container, e.clientY);
+                const dragging = document.querySelector('.dragging');
+                if (afterElement == null) {
+                    container.appendChild(dragging);
+                } else {
+                    container.insertBefore(dragging, afterElement);
+                }
+                container.classList.add('over');
+            });
+             container.addEventListener('dragleave', () => container.classList.remove('over'));
+             container.addEventListener('drop', () => container.classList.remove('over'));
+        });
     }
 
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+
+    // --- VRAGEN GENEREREN (SECTIE 2 & 3) ---
     function laadSimulatieVragen(setNum) {
         const container = document.getElementById('simulatie-vragen');
-        container.innerHTML = ''; // Leegmaken voor nieuwe set
+        container.innerHTML = '';
         const setVragen = metingen[`set${setNum}`];
         setVragen.forEach((q, i) => {
             container.innerHTML += `
             <div class="exercise" data-answer="${q.dichtheid}">
                 <label>${i + 1}. Je meet voor het ${q.kleur}e blok (ID: ${q.id}) een massa van ${q.massa} kg en een volume van ${q.volume} L. Bereken de dichtheid (g/cm³).</label>
-                <input type="text" id="q-sim-${setNum}-${i}" placeholder="Antwoord dichtheid">
+                <input type="text" placeholder="Antwoord dichtheid">
                 <div class="feedback"></div>
             </div>
             <div class="exercise" data-answer="${dichtheidTabelData.find(s => s.dichtheid == q.dichtheid)?.stof || 'Onbekend'}">
                 <label>Welk materiaal is dit volgens de tabel?</label>
-                <input type="text" id="q-sim-mat-${setNum}-${i}" placeholder="Antwoord materiaal">
+                <input type="text" placeholder="Antwoord materiaal">
                 <div class="feedback"></div>
             </div>`;
         });
@@ -109,35 +159,46 @@ document.addEventListener('DOMContentLoaded', () => {
     function laadControleVragen() {
         const container = document.getElementById('controle-vragen');
         const alleMetingen = [...metingen.set1, ...metingen.set2, ...metingen.set3];
-        // Pak 4 willekeurige vragen
         const randomVragen = alleMetingen.sort(() => 0.5 - Math.random()).slice(0, 4); 
         randomVragen.forEach((q, i) => {
              container.innerHTML += `
              <div class="exercise" data-answer="${q.dichtheid}">
                 <label>${i + 1}. Een object heeft een massa van ${q.massa} kg en een volume van ${q.volume} L. Wat is de dichtheid in g/cm³?</label>
-                <input type="text" id="q-controle-${i}" placeholder="Jouw antwoord">
+                <input type="text" placeholder="Jouw antwoord">
                 <div class="feedback"></div>
             </div>`;
         });
     }
 
-    // --- ANTWOORDEN CONTROLEREN ---
+    // --- AANGEPASTE CONTROLE LOGICA ---
     checkBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const sectie = e.target.dataset.section;
-            const vragen = document.querySelectorAll(`#${sectie}-sectie .exercise`);
-            vragen.forEach(vraag => {
-                const input = vraag.querySelector('input, select');
-                const feedback = vraag.querySelector('.feedback');
-                const correctAnswer = vraag.dataset.answer.toLowerCase().trim();
-                const userAnswer = input.value.toLowerCase().trim().replace(',', '.');
+            const exercises = document.querySelectorAll(`#${sectie}-sectie .exercise`);
+            
+            exercises.forEach((ex, index) => {
+                const feedback = ex.querySelector('.feedback');
+                const correctAnswer = ex.dataset.answer.toLowerCase().trim();
+                let userAnswer = '';
                 
+                // Bepaal gebruiker antwoord gebaseerd op vraagtype
+                if (ex.querySelector('.formula-container')) { // Vraag 2
+                    const selects = ex.querySelectorAll('select');
+                    userAnswer = `${selects[0].value}=${selects[1].value}/${selects[2].value}`;
+                } else if (ex.querySelector('.drop-container')) { // Vraag 4
+                    const items = ex.querySelectorAll('.target-list .draggable');
+                    userAnswer = Array.from(items).map(item => item.textContent).join(',');
+                } else {
+                    const input = ex.querySelector('input, select');
+                    if (input) userAnswer = input.value.toLowerCase().trim().replace(',', '.');
+                }
+
                 feedback.style.display = 'block';
                 if (userAnswer === correctAnswer) {
-                    feedback.textContent = `Correct! Het antwoord is inderdaad ${vraag.dataset.answer}.`;
+                    feedback.textContent = `Correct! Het antwoord is inderdaad "${ex.dataset.answer}".`;
                     feedback.className = 'feedback correct';
                 } else {
-                    feedback.textContent = `Helaas, het juiste antwoord is "${vraag.dataset.answer}".`;
+                    feedback.textContent = `Helaas, het juiste antwoord is "${ex.dataset.answer}".`;
                     feedback.className = 'feedback incorrect';
                 }
             });
@@ -158,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
         vulDichtheidTabel();
         laadTheorieVragen();
         laadControleVragen();
-        // Start met het laden van set 1 in de simulatie sectie
         document.querySelector('.set-btn[data-set="1"]').classList.add('active');
         laadSimulatieVragen(1);
     }
