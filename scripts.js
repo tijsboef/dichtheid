@@ -12,12 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
         { stof: "Kurk", dichtheid: "0.25" }, { stof: "Kwik", dichtheid: "13.5" },
     ];
 
-    // --- AANGEPASTE VRAGEN VOOR SECTIE 1 ---
     const theorieVragen = [
         { type: 'mc', vraag: "Wat is de definitie van dichtheid?", opties: ["Hoe zwaar een stof is", "De massa per volume-eenheid", "Hoeveel ruimte een stof inneemt"], antwoord: "De massa per volume-eenheid" },
         { type: 'formula', vraag: "Vul de formule voor dichtheid correct in:", antwoord: "dichtheid=massa/volume" },
         { type: 'mc', vraag: "In welke eenheid wordt dichtheid vaak uitgedrukt in de natuurkunde?", opties: ["kg/L", "g/cm³", "mg/mL"], antwoord: "g/cm³" },
-        { type: 'sort', vraag: "Zet het stappenplan voor een berekening in de juiste volgorde:", stappen: ["Formule invullen", "Gegevens noteren", "Antwoord en eenheid noteren", "Formule noteren"], antwoord: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord en eenheid noteren"] }
+        { type: 'sort', vraag: "Zet het stappenplan voor een berekening in de juiste volgorde:", stappen: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord en eenheid noteren"], antwoord: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord en eenheid noteren" }
     ];
     
     const metingen = {
@@ -75,13 +74,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 q.opties.forEach(optie => html += `<option value="${optie}">${optie}</option>`);
                 html += `</select>`;
             } else if (q.type === 'formula') {
-                html += `<div class="formula-container" id="q-theorie-${i}">
-                    <select><option>dichtheid</option><option>massa</option><option>volume</option></select> =
-                    <select><option>massa</option><option>dichtheid</option><option>volume</option></select> /
-                    <select><option>volume</option><option>massa</option><option>dichtheid</option></select>
-                </div>`;
+                const parts = ["dichtheid", "massa", "volume"];
+                const createSelect = () => {
+                    let selectHtml = `<select><option value="">kies...</option>`;
+                    parts.forEach(p => selectHtml += `<option value="${p}">${p}</option>`);
+                    selectHtml += `</select>`;
+                    return selectHtml;
+                };
+                html += `<div class="formula-container" id="q-theorie-${i}">${createSelect()} = ${createSelect()} / ${createSelect()}</div>`;
             } else if (q.type === 'sort') {
-                const shuffled = [...q.stappen].sort(() => Math.random() - 0.5);
+                let shuffled = [...q.stappen];
+                // Blijf schudden totdat de volgorde niet de juiste is
+                while (shuffled.join(',') === q.antwoord) {
+                    shuffled.sort(() => Math.random() - 0.5);
+                }
                 html += `<div class="drop-container" id="q-theorie-${i}">
                             <div class="source-list">
                                 ${shuffled.map(stap => `<div class="draggable" draggable="true">${stap}</div>`).join('')}
@@ -176,16 +182,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const sectie = e.target.dataset.section;
             const exercises = document.querySelectorAll(`#${sectie}-sectie .exercise`);
             
-            exercises.forEach((ex, index) => {
+            exercises.forEach((ex) => {
                 const feedback = ex.querySelector('.feedback');
                 const correctAnswer = ex.dataset.answer.toLowerCase().trim();
                 let userAnswer = '';
                 
-                // Bepaal gebruiker antwoord gebaseerd op vraagtype
-                if (ex.querySelector('.formula-container')) { // Vraag 2
+                if (ex.querySelector('.formula-container')) {
                     const selects = ex.querySelectorAll('select');
                     userAnswer = `${selects[0].value}=${selects[1].value}/${selects[2].value}`;
-                } else if (ex.querySelector('.drop-container')) { // Vraag 4
+                } else if (ex.querySelector('.drop-container')) {
                     const items = ex.querySelectorAll('.target-list .draggable');
                     userAnswer = Array.from(items).map(item => item.textContent).join(',');
                 } else {
