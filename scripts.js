@@ -3,46 +3,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkAnswersButton = document.getElementById('check-answers');
     const newSetButton = document.getElementById('new-set');
 
+    // Nieuwe vragen gebaseerd op jouw metingen
     const allExercises = [
+        // Set 1
         {
-            question: "Een blokje heeft een massa van 270 g en een volume van 100 cm³. Wat is de dichtheid van het blokje in g/cm³?",
+            question: "Een paars blok (1A) heeft een massa van 19,3 kg en een volume van 5,5 L. Wat is de dichtheid in g/cm³? (Rond af op twee decimalen)",
+            answer: "3.51",
+            unit: "g/cm³"
+        },
+        {
+            question: "Een blauw blok (1B) heeft een massa van 0,4 kg en een volume van 1 L. Wat is de dichtheid in g/cm³?",
+            answer: "0.4",
+            unit: "g/cm³"
+        },
+        {
+            question: "Een geel blok (1C) heeft een massa van 19,32 kg en een volume van 1 L. Wat is de dichtheid in g/cm³?",
+            answer: "19.32",
+            unit: "g/cm³"
+        },
+        {
+            question: "Een rood blok (1D) heeft een massa van 5 kg en een volume van 5 L. Wat is de dichtheid in g/cm³?",
+            answer: "1.0",
+            unit: "g/cm³"
+        },
+        {
+            question: "Een groen blok (1E) heeft een massa van 2,8 kg en een volume van 7 L. Wat is de dichtheid in g/cm³?",
+            answer: "0.4",
+            unit: "g/cm³"
+        },
+        // Set 2
+        {
+            question: "Een lichtbruin blok (2A) heeft een massa van 18 kg en een volume van 1,59 L. Wat is de dichtheid in g/cm³? (Rond af op twee decimalen)",
+            answer: "11.32",
+            unit: "g/cm³"
+        },
+        {
+            question: "Een donkerbruin blok (2B) heeft een massa van 10,8 kg en een volume van 4 L. Wat is de dichtheid in g/cm³?",
             answer: "2.7",
             unit: "g/cm³"
         },
         {
-            question: "Een voorwerp met een dichtheid van 0.8 g/cm³ wordt in water (dichtheid 1.0 g/cm³) geplaatst. Wat gebeurt er met het voorwerp?",
-            answer: "drijft",
-            unit: ""
+            question: "Een groen blok (2C) heeft een massa van 2,7 kg en een volume van 1 L. Wat is de dichtheid in g/cm³?",
+            answer: "2.7",
+            unit: "g/cm³"
         },
         {
-            question: "1.5 L benzine heeft een massa van 1080 g. Bereken de dichtheid van benzine in g/L.",
-            answer: "720",
-            unit: "g/L"
+            question: "Een roze blok (2D) heeft een massa van 18 kg en een volume van 4 L. Wat is de dichtheid in g/cm³?",
+            answer: "4.5",
+            unit: "g/cm³"
         },
         {
-            question: "Een gouden ring (dichtheid 19.3 g/cm³) heeft een volume van 2 cm³. Wat is de massa van de ring?",
-            answer: "38.6",
-            unit: "g"
+            question: "Een lila blok (2E) heeft een massa van 44,8 kg en een volume van 5 L. Wat is de dichtheid in g/cm³? (Rond af op twee decimalen)",
+            answer: "8.96",
+            unit: "g/cm³"
+        },
+        // Set 3
+        {
+            question: "Een bordeaux blok (3A) heeft een massa van 2,85 kg en een volume van 3 L. Wat is de dichtheid in g/cm³?",
+            answer: "0.95",
+            unit: "g/cm³"
         },
         {
-            question: "Je hebt een blokje van 500 g met een dichtheid van 2.5 g/cm³. Wat is het volume van het blokje?",
-            answer: "200",
-            unit: "cm³"
+            question: "Een grijs blok (3B) heeft een massa van 6 kg en een volume van 6 L. Wat is de dichtheid in g/cm³?",
+            answer: "1.0",
+            unit: "g/cm³"
         },
         {
-            question: "0.5 liter alcohol (dichtheid 0.80 g/cm³) heeft een massa van ... gram.",
-            answer: "400",
-            unit: "g"
+            question: "Een beige blok (3C) heeft een massa van 23,4 kg en een volume van 3 L. Wat is de dichtheid in g/cm³?",
+            answer: "7.8",
+            unit: "g/cm³"
         },
         {
-            question: "Een object heeft een volume van 150 cm³ en een massa van 1695 g. Van welk materiaal zou dit object gemaakt kunnen zijn (kijk in tabel 1 uit het document)?",
-            answer: "lood",
-            unit: ""
+            question: "Een camel blok (3D) heeft een massa van 2 kg en een volume van 5 L. Wat is de dichtheid in g/cm³?",
+            answer: "0.4",
+            unit: "g/cm³"
         },
         {
-            question: "Bereken het volume van 1 kg staal (dichtheid 7.8 g/cm³). Rond af op twee decimalen.",
-            answer: "128.21",
-            unit: "cm³"
+            question: "Een wit blok (3E) heeft een massa van 6 kg en een volume van 6,32 L. Wat is de dichtheid in g/cm³? (Rond af op twee decimalen)",
+            answer: "0.95",
+            unit: "g/cm³"
         }
     ];
 
@@ -63,18 +102,18 @@ document.addEventListener('DOMContentLoaded', () => {
         currentExercises.forEach((exercise, index) => {
             const exerciseElement = document.createElement('div');
             exerciseElement.classList.add('exercise');
-            exerciseElement.innerHTML = `
-                <label for="q${index}">${index + 1}. ${exercise.question}</label>
-                <input type="text" id="q${index}" placeholder="Antwoord">
+            exerciseElement.innerHTML = \`
+                <label for="q\${index}">\${index + 1}. \${exercise.question}</label>
+                <input type="text" id="q\${index}" placeholder="Antwoord">
                 <div class="feedback"></div>
-            `;
+            \`;
             exerciseSetContainer.appendChild(exerciseElement);
         });
     }
 
     function checkAnswers() {
         currentExercises.forEach((exercise, index) => {
-            const input = document.getElementById(`q${index}`);
+            const input = document.getElementById(\`q\${index}\`);
             const feedback = input.nextElementSibling;
             
             const userAnswer = input.value.trim().toLowerCase().replace(',', '.');
@@ -83,10 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
             feedback.style.display = 'block';
 
             if (userAnswer === correctAnswer) {
-                feedback.textContent = `Correct! Het antwoord is ${exercise.answer} ${exercise.unit}.`;
+                feedback.textContent = \`Correct! Het antwoord is \${exercise.answer} \${exercise.unit}.\`;
                 feedback.className = 'feedback correct';
             } else {
-                feedback.textContent = `Helaas, het juiste antwoord is ${exercise.answer} ${exercise.unit}.`;
+                feedback.textContent = \`Helaas, het juiste antwoord is \${exercise.answer} \${exercise.unit}.\`;
                 feedback.className = 'feedback incorrect';
             }
         });
