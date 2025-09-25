@@ -81,10 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loadState();
         if (appState.totalCompletions >= MAX_COMPLETIONS) {
             localStorage.removeItem('dichtheidAppState');
+            localStorage.removeItem('dichtheidCompletions');
             window.location.reload();
             return;
         }
-        if (!localStorage.getItem('dichtheidAppState')) { // Eerste keer of na reset
+        if (!localStorage.getItem('dichtheidAppState')) { 
             setupNewSession();
         }
         renderCurrentSection();
@@ -92,17 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function setupNewSession() {
-        appState = JSON.parse(JSON.stringify(defaultState)); // Reset naar default
-        appState.totalCompletions = parseInt(localStorage.getItem('dichtheidCompletions') || 0);
+        const completions = parseInt(localStorage.getItem('dichtheidCompletions') || 0);
+        appState = JSON.parse(JSON.stringify(defaultState)); 
+        appState.totalCompletions = completions;
 
-        // Kies willekeurige vragen voor deze sessie
         const uniqueGroupsT = groupByPrefix(questionDB.theorie.map(q => q.id));
         appState.activeQuestionIds.theorie = uniqueGroupsT.map(g => g[Math.floor(Math.random() * g.length)]);
 
         const uniqueGroupsC = groupByPrefix(questionDB.controle.map(q => q.id));
         appState.activeQuestionIds.controle = uniqueGroupsC.map(g => g[Math.floor(Math.random() * g.length)]);
 
-        // Voor simulatie, kies 3 random blokken per set
         for (let i = 1; i <= 3; i++) {
             appState.activeQuestionIds.simulatie[`set${i}`] = [...questionDB.simulatie[`set${i}`]].sort(() => 0.5 - Math.random()).slice(0, 3).map(q => q.id);
         }
@@ -111,8 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCurrentSection() {
         const section = appState.sections[appState.currentSectionIndex];
+        if (!section) return; // Voorbij laatste sectie
         const container = document.getElementById(`${section.id}-vragen`);
-        if (!container) return; // Voor resultaten sectie
+        if (!container) return;
         container.innerHTML = '';
 
         if (section.id === 'simulatie') {
@@ -168,51 +169,45 @@ document.addEventListener('DOMContentLoaded', () => {
         section.attempts++;
         if (allCorrect) {
             section.isComplete = true;
-            nextBtn.style.display = 'inline-block';
-            checkBtn.style.display = 'none';
         }
         saveState();
         updateUI();
     }
 
     function updateUI() {
-        // Update title
         mainTitle.textContent = appState.currentSectionIndex < 3 ? appState.sections[appState.currentSectionIndex].title : "🏆 Resultaten";
         document.getElementById('completion-counter').textContent = `Voltooid: ${appState.totalCompletions} keer`;
         
-        // Update sections visibility
         contentSections.forEach((sec, i) => sec.classList.toggle('active', i === appState.currentSectionIndex));
 
-        // Update nav buttons and progress bars
         navButtons.forEach((btn, i) => {
-            if (i < 3) {
+            if (i < 3) { // Sectie knoppen
                 const section = appState.sections[i];
                 btn.disabled = i > 0 && !appState.sections[i-1].isComplete;
                 btn.classList.toggle('active', i === appState.currentSectionIndex);
                 
-                let progress = 0;
+                let score = 0;
                 if(section.isComplete) {
-                    progress = 100;
-                } else if (i < appState.currentSectionIndex) {
-                    progress = 100; // Vorige secties zijn per definitie compleet
+                    score = Math.max(10, 100 - (section.attempts - 1) * 25);
                 }
-                const score = section.attempts > 0 ? Math.max(0, 100 - (section.attempts - 1) * 25) : 0;
-                if (section.isComplete) {
-                    btn.querySelector('.progress-bar').style.width = `${score}%`;
-                    btn.querySelector('.progress-bar').style.backgroundColor = score > 75 ? 'var(--success-green)' : 'var(--warning-yellow)';
-                }
+                const progressBar = btn.querySelector('.progress-bar');
+                progressBar.style.width = `${score}%`;
+                progressBar.style.backgroundColor = score > 75 ? 'var(--success-green)' : score > 25 ? 'var(--warning-yellow)' : 'var(--danger-red)';
+
             } else { // Resultaten knop
                  btn.disabled = !appState.sections[2].isComplete;
+                 btn.classList.toggle('active', appState.currentSectionIndex === 3);
             }
         });
         
-        // Update footer buttons
-        checkBtn.style.display = appState.sections[appState.currentSectionIndex]?.isComplete ? 'none' : 'inline-block';
-        nextBtn.style.display = appState.sections[appState.currentSectionIndex]?.isComplete ? 'inline-block' : 'none';
+        const currentSectionIsComplete = appState.sections[appState.currentSectionIndex]?.isComplete;
+        checkBtn.style.display = currentSectionIsComplete ? 'none' : 'inline-block';
+        nextBtn.style.display = currentSectionIsComplete ? 'inline-block' : 'none';
         prevBtn.style.display = appState.currentSectionIndex > 0 ? 'inline-block' : 'none';
 
-        if (appState.currentSectionIndex === 3) { // Resultatenpagina
+        if (appState.currentSectionIndex >= 3) {
             checkBtn.style.display = 'none';
+            prevBtn.style.display = 'inline-block';
             nextBtn.style.display = 'none';
             renderResults();
         }
@@ -229,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="resultaat-percentage">${score}%</span>
             </div>`;
         });
-        const totalAttempts = appState.sections.reduce((acc, s) => acc + s.attempts, 0);
         const totalScore = Math.round(appState.sections.reduce((acc, s) => acc + Math.max(0, 100 - (s.attempts - 1) * 25), 0) / 3);
         
         container.innerHTML += `
@@ -241,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // =================================================================================
-    // 5. HELPER FUNCTIES (HTML GENERATORS, ANSWER CHECKERS, ETC.)
+    // 5. HELPER FUNCTIES
     // =================================================================================
     function generateQuestionHTML(q, sectionId) {
         let content = '';
@@ -249,8 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const optionsHTML = q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
             content = `<select><option value="">Kies een antwoord...</option>${optionsHTML}</select>`;
         } else if (q.type === 'formula') {
-            const p = ['ρ', 'm', 'V']; const c = () => `<select><option value="">kies...</option>${p.map(i => `<option value="${i}">${i}</option>`).join('')}</select>`;
-            content = `<div class="formula-container">${c()} = ${c()} / ${c()}</div>`;
+            const parts = ['ρ', 'm', 'V'];
+            const createSelect = () => `<select><option value="">kies...</option>${parts.map(p => `<option value="${p}">${p}</option>`).join('')}</select>`;
+            content = `<div class="formula-container">${createSelect()} = ${createSelect()} / ${createSelect()}</div>`;
         } else if (q.type === 'sort') {
             let s = [...q.items]; while (s.join(',') === q.answer) { s.sort(() => 0.5 - Math.random()); }
             content = `<div class="drop-container"><div class="source-list">${s.map(i => `<div class="draggable" draggable="true">${i}</div>`).join('')}</div><div class="target-list"></div></div>`;
@@ -272,25 +267,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const qId = exerciseEl.dataset.questionId;
         const qData = findQuestionById(qId);
         
-        if (qData.type === 'mc' || qData.type === 'formula') {
-            return Array.from(exerciseEl.querySelectorAll('select')).map(s => s.value).join('');
+        if (qData.type === 'mc') {
+            return exerciseEl.querySelector('select').value;
+        }
+        if (qData.type === 'formula') {
+            const selects = exerciseEl.querySelectorAll('select');
+            // GECORRIGEERDE LOGICA HIER:
+            return `${selects[0].value}=${selects[1].value}/${selects[2].value}`;
         }
         if (qData.type === 'sort') {
             return Array.from(exerciseEl.querySelectorAll('.target-list .draggable')).map(d => d.textContent).join(',');
         }
-        if (qData.type === 'stappenplan' || qId.startsWith('s')) { // Stappenplan (simulatie of controle)
+        if (qId.startsWith('s') || qId.startsWith('c')) { // Stappenplan
             const antwoord = exerciseEl.querySelector('.antwoord-input').value.trim().replace(',', '.');
-            const stof = exerciseEl.querySelector('.stof-input')?.value.trim().toLowerCase();
+            const stofInput = exerciseEl.querySelector('.stof-input');
+            const stof = stofInput ? stofInput.value.trim() : null;
             return { antwoord, stof };
         }
         return '';
     }
 
     function checkAnswer(userAnswer, questionData) {
-        if (typeof userAnswer === 'object') { // Stappenplan
+        if (typeof userAnswer === 'object' && userAnswer !== null) { // Stappenplan
             let isCorrect = userAnswer.antwoord === questionData.answer;
             if (questionData.stof) {
-                isCorrect = isCorrect && userAnswer.stof === questionData.stof.toLowerCase();
+                isCorrect = isCorrect && userAnswer.stof.toLowerCase() === questionData.stof.toLowerCase();
             }
             return isCorrect;
         } else { // Andere types
@@ -320,18 +321,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function createDropdown(options) { let h = `<select><option value="">kies...</option>`; options.forEach(o => h += `<option value="${o}">${o}</option>`); return h + `</select>`; }
     function setupDragAndDrop() { const d=document.querySelectorAll('.draggable'),c=document.querySelectorAll('.source-list, .target-list');d.forEach(dr=>{dr.addEventListener('dragstart',()=>dr.classList.add('dragging'));dr.addEventListener('dragend',()=>dr.classList.remove('dragging'));});c.forEach(co=>{co.addEventListener('dragover',e=>{e.preventDefault();const a=getDragAfterElement(co,e.clientY),dr=document.querySelector('.dragging');if(a==null){co.appendChild(dr);}else{co.insertBefore(dr,a);}co.classList.add('over');});co.addEventListener('dragleave',()=>co.classList.remove('over'));co.addEventListener('drop',()=>co.classList.remove('over'));});}
     function getDragAfterElement(c,y){const d=[...c.querySelectorAll('.draggable:not(.dragging)')];return d.reduce((cl,ch)=>{const b=ch.getBoundingClientRect(),o=y-b.top-b.height/2;if(o<0&&o>cl.offset){return{offset:o,element:ch};}else{return cl;}},{offset:Number.NEGATIVE_INFINITY}).element;}
-
+    
     // =================================================================================
     // 6. EVENT LISTENERS
     // =================================================================================
     checkBtn.addEventListener('click', checkAnswers);
     nextBtn.addEventListener('click', () => {
         if (appState.currentSectionIndex < 3) {
-            if (appState.currentSectionIndex === 2) { // Na laatste sectie
+            if (appState.currentSectionIndex === 2) {
                 appState.totalCompletions++;
                 localStorage.setItem('dichtheidCompletions', appState.totalCompletions);
+                appState.currentSectionIndex++;
+                setupNewSession(); // Setup voor de volgende keer, maar toon nu resultaten
+            } else {
+                appState.currentSectionIndex++;
             }
-            appState.currentSectionIndex++;
             renderCurrentSection();
             saveState();
             updateUI();
@@ -360,7 +364,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderCurrentSection();
     }));
     document.getElementById('reset-btn')?.addEventListener('click', () => {
-        setupNewSession();
+        appState.currentSectionIndex = 0;
+        setupNewSession(); // Maakt een compleet nieuwe sessie aan
         renderCurrentSection();
         updateUI();
     });
