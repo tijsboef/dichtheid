@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 1. STATE MANAGEMENT & CONFIG
     // =================================================================================
-    const APP_VERSION = "1.3"; // VERHOOG DIT NUMMER OM LOCALSTORAGE TE RESETTEN BIJ UPDATES
+    const APP_VERSION = "1.4"; // VERHOOG DIT NUMMER OM LOCALSTORAGE TE RESETTEN BIJ UPDATES
     let appState = {};
     const MAX_COMPLETIONS = 4;
 
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedState.appVersion !== APP_VERSION) {
                 localStorage.removeItem('dichtheidAppState');
                 appState = JSON.parse(JSON.stringify(defaultState));
-                console.log("App update gedetecteerd. Lokale data gereset.");
             } else {
                 appState = savedState;
             }
@@ -45,7 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 2. VRAGEN DATABASE & DATA
     // =================================================================================
-    const dichtheidTabelData = [ { stof: "Hout", dichtheid: "0.40" }, { stof: "Benzine", dichtheid: "0.72" }, { stof: "IJs", dichtheid: "0.92" }, { stof: "Water", dichtheid: "1.00" }, { stof: "Aluminium", dichtheid: "2.70" }, { stof: "Staal", dichtheid: "7.80" }, { stof: "Koper", dichtheid: "8.96" }, { stof: "Lood", dichtheid: "11.32" }, { stof: "Goud", dichtheid: "19.32" } ];
+    const dichtheidTabelData = [
+        { stof: "Lucht", dichtheid: "0.0013" }, { stof: "Kurk", dichtheid: "0.25" }, { stof: "Hout", dichtheid: "0.40" },
+        { stof: "Benzine", dichtheid: "0.72" }, { stof: "Alcohol", dichtheid: "0.80" }, { stof: "Spiritus", dichtheid: "0.80" },
+        { stof: "IJs", dichtheid: "0.92" }, { stof: "Mens", dichtheid: "0.95" }, { stof: "Water", dichtheid: "1.00" },
+        { stof: "Perspex", dichtheid: "1.2" }, { stof: "Suiker", dichtheid: "1.58" }, { stof: "Keukenzout", dichtheid: "2.17" },
+        { stof: "Glas", dichtheid: "2.6" }, { stof: "Aluminium", dichtheid: "2.70" }, { stof: "Diamant", dichtheid: "3.51" },
+        { stof: "Titanium", dichtheid: "4.50" }, { stof: "Tin", dichtheid: "7.28" }, { stof: "Staal", dichtheid: "7.80" },
+        { stof: "IJzer", dichtheid: "7.87" }, { stof: "Koper", dichtheid: "8.96" }, { stof: "Lood", dichtheid: "11.32" },
+        { stof: "Goud", dichtheid: "19.32" }, { stof: "Kwik", dichtheid: "13.5" }
+    ];
     const grootheden = ['ρ', 'm', 'V'], eenheden = ['g', 'kg', 'cm³', 'L', 'g/cm³', 'kg/L'], operatoren = ['/', '*', '+', '-'];
 
     const questionDB = {
@@ -57,11 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 't3_v1', type: 'sort', prompt: "Zet het stappenplan in de juiste volgorde.", items: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord + eenheid"], answer: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord + eenheid", hints: ["Je begint altijd met inventariseren wat je weet.", "De formule komt vóór het invullen.", "Het antwoord is de allerlaatste stap."] }
         ],
         simulatie: {
-            set1: [{id:'s1_1', type: 'stappenplan', k:'Paars',m:'19.3',v:'5.5',d:'3.51'},{id:'s1_2', type: 'stappenplan', k:'Blauw',m:'0.4',v:'1',d:'0.40'},{id:'s1_3', type: 'stappenplan', k:'Geel',m:'19.32',v:'1',d:'19.32'},{id:'s1_4', type: 'stappenplan', k:'Rood',m:'5',v:'5',d:'1.00'},{id:'s1_5', type: 'stappenplan', k:'Groen',m:'2.8',v:'7',d:'0.40'}],
-            set2: [{id:'s2_1', type: 'stappenplan', k:'Lichtbruin',m:'18',v:'1.59',d:'11.32'},{id:'s2_2', type: 'stappenplan', k:'Donkerbruin',m:'10.8',v:'4',d:'2.70'},{id:'s2_3', type: 'stappenplan', k:'Groen',m:'2.7',v:'1',d:'2.70'},{id:'s2_4', type: 'stappenplan', k:'Roze',m:'18',v:'4',d:'4.50'},{id:'s2_5', type: 'stappenplan', k:'Lila',m:'44.8',v:'5',d:'8.96'}],
-            set3: [{id:'s3_1', type: 'stappenplan', k:'Bordeaux',m:'2.85',v:'3',d:'0.95'},{id:'s3_2', type: 'stappenplan', k:'Grijs',m:'6',v:'6',d:'1.00'},{id:'s3_3', type: 'stappenplan', k:'Beige',m:'23.4',v:'3',d:'7.80'},{id:'s3_4', type: 'stappenplan', k:'Camel',m:'2',v:'5',d:'0.40'},{id:'s3_5', type: 'stappenplan', k:'Wit',m:'6',v:'6.32',d:'0.95'}]
+            set1: [{id:'s1_1', type: 'stappenplan', k:'Paars',m:'19.3',v:'5.5',d:'3.51', stof:'Diamant'},{id:'s1_2', type: 'stappenplan', k:'Blauw',m:'0.4',v:'1',d:'0.40', stof:'Hout'},{id:'s1_3', type: 'stappenplan', k:'Geel',m:'19.32',v:'1',d:'19.32', stof:'Goud'},{id:'s1_4', type: 'stappenplan', k:'Rood',m:'5',v:'5',d:'1.00', stof:'Water'},{id:'s1_5', type: 'stappenplan', k:'Groen',m:'2.8',v:'7',d:'0.40', stof:'Hout'}],
+            set2: [{id:'s2_1', type: 'stappenplan', k:'Lichtbruin',m:'18',v:'1.59',d:'11.32', stof:'Lood'},{id:'s2_2', type: 'stappenplan', k:'Donkerbruin',m:'10.8',v:'4',d:'2.70', stof:'Aluminium'},{id:'s2_3', type: 'stappenplan', k:'Groen',m:'2.7',v:'1',d:'2.70', stof:'Aluminium'},{id:'s2_4', type: 'stappenplan', k:'Roze',m:'18',v:'4',d:'4.50', stof:'Titanium'},{id:'s2_5', type: 'stappenplan', k:'Lila',m:'44.8',v:'5',d:'8.96', stof:'Koper'}],
+            set3: [{id:'s3_1', type: 'stappenplan', k:'Bordeaux',m:'2.85',v:'3',d:'0.95', stof:'Mens'},{id:'s3_2', type: 'stappenplan', k:'Grijs',m:'6',v:'6',d:'1.00', stof:'Water'},{id:'s3_3', type: 'stappenplan', k:'Beige',m:'23.4',v:'3',d:'7.80', stof:'Staal'},{id:'s3_4', type: 'stappenplan', k:'Camel',m:'2',v:'5',d:'0.40', stof:'Hout'},{id:'s3_5', type: 'stappenplan', k:'Wit',m:'6',v:'6.32',d:'0.95', stof:'Mens'}]
         },
-        // --- GECORRIGEERDE SECTIE ---
         controle: [
             { id: 'c1_v1', type: 'stappenplan', prompt: "Een blokje heeft 270 g massa en 100 cm³ volume. Bereken de dichtheid.", data: {m:'270', v:'100'}, answer: '2.7', hints: ["Formule: ρ = m / V.", "Deel 270 door 100.", "Het antwoord is 2,7 g/cm³."]},
             { id: 'c1_v2', type: 'stappenplan', prompt: "Een object van 0.8 kg heeft een volume van 1 L. Bereken de dichtheid in g/cm³.", data: {m:'800', v:'1000'}, answer: '0.8', hints: ["Reken eerst de eenheden om! 1 kg = 1000 g, 1 L = 1000 cm³.", "Deel 800 door 1000.", "De dichtheid is 0,8 g/cm³."]},
@@ -72,9 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
     };
 
-    // =================================================================================
-    // 3. UI ELEMENTEN & EVENT LISTENERS
-    // =================================================================================
     const mainTitle = document.getElementById('main-title');
     const contentSections = document.querySelectorAll('.content-sectie');
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -83,9 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('vorige-sectie-btn');
     const modal = document.getElementById('dichtheid-modal');
     
-    // =================================================================================
-    // 4. APP LOGICA (INIT, STATE, NAVIGATIE)
-    // =================================================================================
     function init() {
         loadState();
         if (appState.totalCompletions >= MAX_COMPLETIONS) {
@@ -165,10 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML += `<div class="resultaat-item"><span><strong>Totaalscore</strong></span><span class="resultaat-percentage">${totalScore}%</span></div><p>Fantastisch werk! Klik hieronder om de module opnieuw te starten met een nieuwe set vragen.</p>`;
     }
 
-    // =================================================================================
-    // 5. NAKIJK LOGICA
-    // =================================================================================
-
     function checkAnswers() {
         const section = appState.sections[appState.currentSectionIndex];
         let allCorrect = true;
@@ -208,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
             section.isComplete = true;
             section.attempts = section.attempts || 1;
         } else {
-            section.attempts++;
+            section.attempts = (section.attempts || 0) + 1;
         }
         saveState();
         updateUI();
@@ -258,9 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.abs(userNum - correctNum) <= tolerance;
     }
 
-    // =================================================================================
-    // 6. HELPER & INIT FUNCTIES
-    // =================================================================================
     function renderCurrentSection() {
         const section = appState.sections[appState.currentSectionIndex];
         if (!section) return; 
