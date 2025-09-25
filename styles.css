@@ -1,57 +1,156 @@
-/* Styling gebaseerd op Styling System Documentatie */
+/* --- Styling System Documentatie (Schoolstijl) --- */
 :root {
-    --primary-blue: #3B82F6; --success-green: #108981; --warning-yellow: #F59E0B;
-    --danger-red: #EF4444; --gray-100: #f3f4f6; --gray-300: #d1d5db;
-    --gray-600: #6b7280; --gray-800: #1f2937; --transition-speed: 0.2s;
+    /* Hoofdkleuren School */
+    --school-dark-green: #004d40;
+    --school-light-green: #a7f3d0;
+    --school-light-blue: #a5f3fc;
+    
+    /* Status Kleuren (uit documentatie) */
+    --success-green: #10B981;
+    --primary-blue: #3B82F6;
+    --warning-yellow: #F59E0B;
+    --danger-red: #EF4444;
+
+    /* Neutrale Kleuren */
+    --gray-100: #f3f4f6;
+    --gray-300: #d1d5db;
+    --gray-600: #6b7280;
+    --gray-800: #1f2937;
+
+    /* Typografie & Transitions */
+    --font-family: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
     --transition-easing: ease-in-out;
 }
+
+/* --- Basis & Layout --- */
+*, *::before, *::after { box-sizing: border-box; }
 body {
-    font-family: 'Inter', sans-serif; background-color: var(--gray-100);
-    color: var(--gray-800); margin: 0; padding: 20px 0;
+    font-family: var(--font-family);
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    margin: 0;
+    line-height: 1.6;
 }
-.container { max-width: 900px; margin: 0 auto; padding: 20px; }
-header { text-align: center; border-bottom: 2px solid var(--gray-300); margin-bottom: 2rem; }
-header h1 { font-size: 2rem; color: var(--primary-blue); }
-.content-sectie { background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-h2 { font-size: 1.5rem; border-bottom: 1px solid var(--gray-300); padding-bottom: 10px; margin-bottom: 1rem; }
-h3 { font-size: 1.2rem; margin-top: 1.5rem; }
-.exercise { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--gray-300); }
-.exercise label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
-.exercise input, .exercise select { padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 4px; font-size: 1rem; box-sizing: border-box;}
-.exercise .feedback { margin-top: 0.5rem; font-size: 0.875rem; display: none; padding: 0.5rem; border-radius: 4px; }
-.exercise .feedback.correct { color: white; background-color: var(--success-green); }
-.exercise .feedback.incorrect { color: white; background-color: var(--danger-red); }
-.btn-primary, .btn-secondary { padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all var(--transition-speed) var(--transition-easing); margin-right: 1rem; }
-.btn-primary { background-color: var(--primary-blue); color: white; }
-.btn-primary:hover { background-color: #2563EB; transform: translateY(-1px); }
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: 280px;
+    background-color: var(--school-dark-green);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    flex-shrink: 0;
+}
+.sidebar-header h2 {
+    text-align: center;
+    margin: 0 0 2rem 0;
+    font-size: 1.8rem;
+}
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex-grow: 1;
+}
+.nav-btn {
+    background: transparent;
+    border: 2px solid transparent;
+    color: white;
+    text-align: left;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: background-color var(--transition-speed);
+}
+.nav-btn:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.1); }
+.nav-btn.active {
+    background-color: var(--school-light-green);
+    color: var(--school-dark-green);
+    border-color: var(--success-green);
+}
+.nav-btn:disabled { color: var(--gray-600); cursor: not-allowed; }
+.nav-icon { font-size: 1.2rem; }
+.progress-bar-container { width: 100%; height: 8px; background-color: rgba(255, 255, 255, 0.2); border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background-color: var(--success-green); transition: width var(--transition-speed); }
+.nav-btn.active .progress-bar { background-color: var(--school-dark-green); }
+
+/* --- Main Content --- */
+.main-content {
+    flex-grow: 1;
+    padding: 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+.main-header {
+    border-bottom: 2px solid var(--gray-300);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.main-header h1 { color: var(--school-dark-green); margin: 0; font-size: 2rem; }
+#completion-counter { font-weight: 600; background-color: var(--school-light-blue); color: var(--school-dark-green); padding: 0.5rem 1rem; border-radius: 20px; }
+
+/* Content Secties */
+.content-sectie { display: none; }
+.content-sectie.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.vragen-container { display: flex; flex-direction: column; gap: 2rem; }
+.exercise { background-color: white; padding: 1.5rem; border-radius: 8px; border-left: 5px solid var(--school-light-blue); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.exercise label, .exercise h3 { font-weight: 700; font-size: 1.2rem; margin-bottom: 1rem; color: var(--school-dark-green); }
+
+/* --- Styling Componenten & Vragen --- */
+input, select { padding: 0.75rem; border: 2px solid var(--gray-300); border-radius: 6px; font-size: 1rem; width: 100%; transition: border-color var(--transition-speed); }
+input:focus, select:focus { border-color: var(--primary-blue); outline: none; }
+.btn { padding: 0.8rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all var(--transition-speed); }
+.btn-primary { background-color: var(--success-green); color: white; }
+.btn-primary:hover { background-color: #059669; transform: translateY(-2px); }
 .btn-secondary { background-color: var(--gray-600); color: white; }
-.btn-secondary:hover { background-color: var(--gray-800); transform: translateY(-1px); }
-.navigatie { text-align: center; }
-.instructies { background-color: var(--gray-100); border-left: 4px solid var(--primary-blue); padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;}
-.set-selector { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-300); text-align: center; }
-.set-btn.active { background-color: var(--success-green); }
+.btn-secondary:hover { background-color: var(--gray-800); }
+.main-footer { margin-top: auto; padding-top: 2rem; display: flex; justify-content: space-between; border-top: 2px solid var(--gray-300); }
 
-/* --- STIJLEN VOOR STAPPENPLAN SECTIE 2 --- */
-.stappenplan-container { margin-top: 1rem; padding: 1rem; background-color: #fafafa; border-radius: 5px; }
-.stap-rij { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+/* Feedback & Hints */
+.feedback { margin-top: 1rem; padding: 1rem; border-radius: 6px; font-weight: 600; display: none; }
+.feedback.correct { background-color: var(--school-light-green); color: var(--school-dark-green); border-left: 5px solid var(--success-green); }
+.feedback.incorrect { background-color: #fee2e2; color: #991b1b; border-left: 5px solid var(--danger-red); }
+.hint { margin-top: 1rem; padding: 0.8rem; background-color: #fefce8; color: #a16207; border-left: 5px solid var(--warning-yellow); border-radius: 6px; }
+
+/* Stappenplan & Sleepvraag */
+.stappenplan-container { margin-top: 1rem; padding: 1rem; background-color: var(--gray-100); border-radius: 5px; display: flex; flex-direction: column; gap: 1rem; }
+.stap-rij { display: flex; align-items: center; gap: 0.5rem; }
 .stap-rij label { font-weight: bold; min-width: 60px; }
-.stap-rij input { width: 100px; }
-.stap-rij select { min-width: 60px; }
-.stap-rij .equals { font-weight: bold; font-size: 1.2rem; }
+.stap-rij input { width: 120px; } .stap-rij select { min-width: 80px; }
+.drop-container { display: flex; gap: 1rem; }
+.source-list, .target-list { border: 2px dashed var(--gray-300); border-radius: 8px; padding: 1rem; min-height: 200px; width: 50%; }
+.draggable { background-color: white; padding: 0.75rem; border-radius: 6px; cursor: grab; border: 1px solid var(--gray-300); }
 
-/* Stijlen voor sleepvraag */
-.formula-container select { width: auto; display: inline-block; margin: 0 5px; }
-.drop-container { display: flex; justify-content: space-between; margin-top: 10px; }
-.source-list, .target-list { border: 2px dashed var(--gray-300); border-radius: 5px; padding: 10px; min-height: 150px; width: 48%; }
-.target-list.over { border-color: var(--primary-blue); background-color: #eef2ff; }
-.draggable { background-color: white; padding: 8px 12px; margin-bottom: 5px; border: 1px solid var(--gray-300); border-radius: 4px; cursor: grab; user-select: none; transition: background-color 0.2s; }
-.draggable:active { cursor: grabbing; background-color: var(--gray-100); }
+/* Resultaten Sectie */
+#resultaten-overzicht { display: flex; flex-direction: column; gap: 1rem; margin: 2rem 0; }
+.resultaat-item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.resultaat-item span { font-size: 1.2rem; font-weight: 600; }
+.resultaat-percentage { font-size: 1.5rem; font-weight: 700; color: var(--school-dark-green); }
+.resultaat-item.perfect .resultaat-percentage { color: var(--success-green); }
 
-/* Modal Styles */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-.modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 700px; border-radius: 8px; animation: modalFadeIn 0.3s ease-out; }
+/* Modal */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+.modal-content { background-color: #fff; margin: 10% auto; padding: 2rem; border-radius: 10px; width: 90%; max-width: 800px; animation: modalFadeIn 0.3s; }
 .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-#dichtheid-tabel { width: 100%; border-collapse: collapse; }
-#dichtheid-tabel th, #dichtheid-tabel td { border: 1px solid var(--gray-300); padding: 8px; text-align: left; }
+#dichtheid-tabel { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+#dichtheid-tabel th, #dichtheid-tabel td { border: 1px solid var(--gray-300); padding: 0.75rem; text-align: left; }
 #dichtheid-tabel th { background-color: var(--gray-100); }
-@keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
