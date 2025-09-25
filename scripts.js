@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 1. STATE MANAGEMENT & CONFIG
     // =================================================================================
-    const APP_VERSION = "1.3"; // Verhoogd om localStorage te resetten
+    const APP_VERSION = "1.5"; // Verhoogd om localStorage te resetten
     let appState = {};
     const MAX_COMPLETIONS = 4;
 
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedState.appVersion !== APP_VERSION) {
                 localStorage.removeItem('dichtheidAppState');
                 appState = JSON.parse(JSON.stringify(defaultState));
-                console.log("App update gedetecteerd. Lokale data gereset.");
             } else {
                 appState = savedState;
             }
@@ -45,7 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 2. VRAGEN DATABASE & DATA
     // =================================================================================
-    const dichtheidTabelData = [ { stof: "Hout", dichtheid: "0.40" }, { stof: "Benzine", dichtheid: "0.72" }, { stof: "IJs", dichtheid: "0.92" }, { stof: "Water", dichtheid: "1.00" }, { stof: "Aluminium", dichtheid: "2.70" }, { stof: "Staal", dichtheid: "7.80" }, { stof: "Koper", dichtheid: "8.96" }, { stof: "Lood", dichtheid: "11.32" }, { stof: "Goud", dichtheid: "19.32" } ];
+    const dichtheidTabelData = [
+        { stof: "Lucht", dichtheid: "0.0013" }, { stof: "Kurk", dichtheid: "0.25" }, { stof: "Hout", dichtheid: "0.40" },
+        { stof: "Benzine", dichtheid: "0.72" }, { stof: "Alcohol", dichtheid: "0.80" }, { stof: "Spiritus", dichtheid: "0.80" },
+        { stof: "IJs", dichtheid: "0.92" }, { stof: "Mens", dichtheid: "0.95" }, { stof: "Water", dichtheid: "1.00" },
+        { stof: "Perspex", dichtheid: "1.2" }, { stof: "Suiker", dichtheid: "1.58" }, { stof: "Keukenzout", dichtheid: "2.17" },
+        { stof: "Glas", dichtheid: "2.6" }, { stof: "Aluminium", dichtheid: "2.70" }, { stof: "Diamant", dichtheid: "3.51" },
+        { stof: "Titanium", dichtheid: "4.50" }, { stof: "Tin", dichtheid: "7.28" }, { stof: "Staal", dichtheid: "7.80" },
+        { stof: "IJzer", dichtheid: "7.87" }, { stof: "Koper", dichtheid: "8.96" }, { stof: "Lood", dichtheid: "11.32" },
+        { stof: "Goud", dichtheid: "19.32" }, { stof: "Kwik", dichtheid: "13.5" }
+    ];
     const grootheden = ['ρ', 'm', 'V'], eenheden = ['g', 'kg', 'cm³', 'L', 'g/cm³', 'kg/L'], operatoren = ['/', '*', '+', '-'];
 
     const questionDB = {
@@ -56,12 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 't2_v2', type: 'mc', prompt: "Welke formule gebruik je om de massa (m) te berekenen als je de dichtheid (ρ) en het volume (V) weet?", options: ["m = V / ρ", "m = ρ / V", "m = ρ * V"], answer: "m = ρ * V", hints: ["De basisformule is ρ = m / V.", "Je moet de formule omschrijven.", "Vermenigvuldig beide kanten van de basisformule met V."] },
             { id: 't3_v1', type: 'sort', prompt: "Zet het stappenplan in de juiste volgorde.", items: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord + eenheid"], answer: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord + eenheid", hints: ["Je begint altijd met inventariseren wat je weet.", "De formule komt vóór het invullen.", "Het antwoord is de allerlaatste stap."] }
         ],
-        simulatie: { // Toegevoegd: type: 'stappenplan'
-            set1: [{id:'s1_1', type: 'stappenplan', k:'Paars',m:'19.3',v:'5.5',d:'3.51', stof: 'Diamant'},{id:'s1_2', type: 'stappenplan', k:'Blauw',m:'0.4',v:'1',d:'0.40', stof: 'Hout'},{id:'s1_3', type: 'stappenplan', k:'Geel',m:'19.32',v:'1',d:'19.32', stof: 'Goud'},{id:'s1_4', type: 'stappenplan', k:'Rood',m:'5',v:'5',d:'1.00', stof: 'Water'},{id:'s1_5', type: 'stappenplan', k:'Groen',m:'2.8',v:'7',d:'0.40', stof: 'Hout'}],
-            set2: [{id:'s2_1', type: 'stappenplan', k:'Lichtbruin',m:'18',v:'1.59',d:'11.32', stof: 'Lood'},{id:'s2_2', type: 'stappenplan', k:'Donkerbruin',m:'10.8',v:'4',d:'2.70', stof: 'Aluminium'},{id:'s2_3', type: 'stappenplan', k:'Groen',m:'2.7',v:'1',d:'2.70', stof: 'Aluminium'},{id:'s2_4', type: 'stappenplan', k:'Roze',m:'18',v:'4',d:'4.50', stof: 'Titanium'},{id:'s2_5', type: 'stappenplan', k:'Lila',m:'44.8',v:'5',d:'8.96', stof: 'Koper'}],
-            set3: [{id:'s3_1', type: 'stappenplan', k:'Bordeaux',m:'2.85',v:'3',d:'0.95', stof: 'Mens'},{id:'s3_2', type: 'stappenplan', k:'Grijs',m:'6',v:'6',d:'1.00', stof: 'Water'},{id:'s3_3', type: 'stappenplan', k:'Beige',m:'23.4',v:'3',d:'7.80', stof: 'Staal'},{id:'s3_4', type: 'stappenplan', k:'Camel',m:'2',v:'5',d:'0.40', stof: 'Hout'},{id:'s3_5', type: 'stappenplan', k:'Wit',m:'6',v:'6.32',d:'0.95', stof: 'Mens'}]
+        simulatie: {
+            set1: [{id:'s1_1', type: 'stappenplan', k:'Paars',m:'19.3',v:'5.5',d:'3.51', stof:'Diamant'},{id:'s1_2', type: 'stappenplan', k:'Blauw',m:'0.4',v:'1',d:'0.40', stof:'Hout'},{id:'s1_3', type: 'stappenplan', k:'Geel',m:'19.32',v:'1',d:'19.32', stof:'Goud'},{id:'s1_4', type: 'stappenplan', k:'Rood',m:'5',v:'5',d:'1.00', stof:'Water'},{id:'s1_5', type: 'stappenplan', k:'Groen',m:'2.8',v:'7',d:'0.40', stof:'Hout'}],
+            set2: [{id:'s2_1', type: 'stappenplan', k:'Lichtbruin',m:'18',v:'1.59',d:'11.32', stof:'Lood'},{id:'s2_2', type: 'stappenplan', k:'Donkerbruin',m:'10.8',v:'4',d:'2.70', stof:'Aluminium'},{id:'s2_3', type: 'stappenplan', k:'Groen',m:'2.7',v:'1',d:'2.70', stof:'Aluminium'},{id:'s2_4', type: 'stappenplan', k:'Roze',m:'18',v:'4',d:'4.50', stof:'Titanium'},{id:'s2_5', type: 'stappenplan', k:'Lila',m:'44.8',v:'5',d:'8.96', stof:'Koper'}],
+            set3: [{id:'s3_1', type: 'stappenplan', k:'Bordeaux',m:'2.85',v:'3',d:'0.95', stof:'Mens'},{id:'s3_2', type: 'stappenplan', k:'Grijs',m:'6',v:'6',d:'1.00', stof:'Water'},{id:'s3_3', type: 'stappenplan', k:'Beige',m:'23.4',v:'3',d:'7.80', stof:'Staal'},{id:'s3_4', type: 'stappenplan', k:'Camel',m:'2',v:'5',d:'0.40', stof:'Hout'},{id:'s3_5', type: 'stappenplan', k:'Wit',m:'6',v:'6.32',d:'0.95', stof:'Mens'}]
         },
-        controle: [ // Toegevoegd: type: 'stappenplan'
+        controle: [
             { id: 'c1_v1', type: 'stappenplan', prompt: "Een blokje heeft 270 g massa en 100 cm³ volume. Bereken de dichtheid.", data: {m:'270', v:'100'}, answer: '2.7', hints: ["Formule: ρ = m / V.", "Deel 270 door 100.", "Het antwoord is 2,7 g/cm³."]},
             { id: 'c1_v2', type: 'stappenplan', prompt: "Een object van 0.8 kg heeft een volume van 1 L. Bereken de dichtheid in g/cm³.", data: {m:'800', v:'1000'}, answer: '0.8', hints: ["Reken eerst de eenheden om! 1 kg = 1000 g, 1 L = 1000 cm³.", "Deel 800 door 1000.", "De dichtheid is 0,8 g/cm³."]},
             { id: 'c2_v1', type: 'stappenplan', prompt: "Een gouden ring heeft 2 cm³ volume. Bereken de massa. Zoek de dichtheid van goud op in de tabel.", data: {p:'19.32', v:'2'}, answer: '38.64', hints: ["Zoek eerst de dichtheid van goud.", "Formule: m = ρ * V.", "Vermenigvuldig 19,32 met 2."]},
