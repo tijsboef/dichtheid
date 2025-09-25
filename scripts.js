@@ -2,10 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 1. STATE MANAGEMENT & CONFIG
     // =================================================================================
+    const APP_VERSION = "1.2"; // VERHOOG DIT NUMMER OM LOCALSTORAGE TE RESETTEN BIJ UPDATES
     let appState = {};
     const MAX_COMPLETIONS = 4;
 
     const defaultState = {
+        appVersion: APP_VERSION,
         currentSectionIndex: 0,
         totalCompletions: 0,
         sections: [
@@ -15,10 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ],
         activeQuestionIds: {
             theorie: [],
-            simulatie: {}, // Wordt per set gevuld
+            simulatie: {},
             controle: []
-        },
-        sessionStartTime: Date.now()
+        }
     };
 
     function saveState() {
@@ -26,11 +27,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadState() {
-        const savedState = localStorage.getItem('dichtheidAppState');
-        if (savedState) {
-            appState = JSON.parse(savedState);
+        const savedStateJSON = localStorage.getItem('dichtheidAppState');
+        if (savedStateJSON) {
+            const savedState = JSON.parse(savedStateJSON);
+            // Automatische reset als de app-versie niet overeenkomt
+            if (savedState.appVersion !== APP_VERSION) {
+                localStorage.removeItem('dichtheidAppState');
+                appState = JSON.parse(JSON.stringify(defaultState));
+                console.log("App update gedetecteerd. Lokale data gereset.");
+            } else {
+                appState = savedState;
+            }
         } else {
-            appState = JSON.parse(JSON.stringify(defaultState)); // Deep copy
+            appState = JSON.parse(JSON.stringify(defaultState));
         }
     }
 
@@ -44,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         theorie: [
             { id: 't1_v1', type: 'mc', prompt: "Wat beschrijft dichtheid het best?", options: ["De zwaarte van een object", "Massa per volume-eenheid", "De grootte van een object"], answer: "Massa per volume-eenheid", hints: ["Denk aan de eenheid: g/cm³.", "Het is een verhouding tussen twee grootheden.", "Dichtheid is massa gedeeld door..."] },
             { id: 't1_v2', type: 'mc', prompt: "Als twee blokken hetzelfde volume hebben, maar blok A is zwaarder, wat kun je zeggen over de dichtheid?", options: ["Blok A heeft een lagere dichtheid", "Blok B heeft een hogere dichtheid", "Blok A heeft een hogere dichtheid"], answer: "Blok A heeft een hogere dichtheid", hints: ["Meer massa in hetzelfde volume betekent...", "De formule is ρ = m / V.", "Als 'm' groter is en 'V' gelijk, wat gebeurt er dan met 'ρ'?"] },
-            { id: 't2_v1', type: 'formula', prompt: "Stel de formule voor dichtheid samen.", answer: "ρ=m/V", hints: ["ρ (rho) is het symbool voor dichtheid.", "Massa wordt gedeeld door volume.", "De formule is rho = m / V."] },
+            { id: 't2_v1', type: 'formula', prompt: "Stel de formule voor dichtheid samen.", answer: "ρ=m/V", hints: ["ρ (rho) is het symbool voor dichtheid.", "Massa wordt gedeeld door volume.", "De formule is ρ = m / V."] },
             { id: 't2_v2', type: 'mc', prompt: "Welke formule gebruik je om de massa (m) te berekenen als je de dichtheid (ρ) en het volume (V) weet?", options: ["m = V / ρ", "m = ρ / V", "m = ρ * V"], answer: "m = ρ * V", hints: ["De basisformule is ρ = m / V.", "Je moet de formule omschrijven.", "Vermenigvuldig beide kanten van de basisformule met V."] },
             { id: 't3_v1', type: 'sort', prompt: "Zet het stappenplan in de juiste volgorde.", items: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord + eenheid"], answer: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord + eenheid", hints: ["Je begint altijd met inventariseren wat je weet.", "De formule komt vóór het invullen.", "Het antwoord is de allerlaatste stap."] }
         ],
@@ -64,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // =================================================================================
-    // 3. UI ELEMENTEN
+    // 3. UI ELEMENTEN & EVENT LISTENERS
     // =================================================================================
     const mainTitle = document.getElementById('main-title');
     const contentSections = document.querySelectorAll('.content-sectie');
@@ -73,9 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('volgende-sectie-btn');
     const prevBtn = document.getElementById('vorige-sectie-btn');
     const modal = document.getElementById('dichtheid-modal');
-
+    
     // =================================================================================
-    // 4. APP LOGICA
+    // 4. APP LOGICA (INIT, STATE, NAVIGATIE)
     // =================================================================================
     function init() {
         loadState();
@@ -85,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.reload();
             return;
         }
-        if (!localStorage.getItem('dichtheidAppState')) { 
+        if (!appState.activeQuestionIds.theorie.length) { 
             setupNewSession();
         }
         renderCurrentSection();
@@ -108,72 +117,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         saveState();
     }
-
-    function renderCurrentSection() {
-        const section = appState.sections[appState.currentSectionIndex];
-        if (!section) return; 
-        const container = document.getElementById(`${section.id}-vragen`);
-        if (!container) return;
-        container.innerHTML = '';
-
-        if (section.id === 'simulatie') {
-            const activeSet = document.querySelector('.set-btn.active')?.dataset.set || '1';
-            const questionIds = appState.activeQuestionIds.simulatie[`set${activeSet}`];
-            const questions = questionDB.simulatie[`set${activeSet}`].filter(q => questionIds.includes(q.id));
-            questions.forEach(q => container.innerHTML += generateQuestionHTML(q, section.id));
-        } else {
-            const questionIds = appState.activeQuestionIds[section.id];
-            const questions = questionDB[section.id].filter(q => questionIds.includes(q.id));
-            questions.forEach(q => container.innerHTML += generateQuestionHTML(q, section.id));
-        }
-        
-        setupDragAndDrop();
-    }
-
-    function checkAnswers() {
-        const section = appState.sections[appState.currentSectionIndex];
-        let allCorrect = true;
-
-        const questionsContainer = document.getElementById(`${section.id}-vragen`);
-        const exerciseElements = questionsContainer.querySelectorAll('.exercise');
-
-        exerciseElements.forEach(exEl => {
-            const qId = exEl.dataset.questionId;
-            const questionData = findQuestionById(qId);
-            
-            const userAnswer = getUserAnswer(exEl);
-            const isCorrect = checkAnswer(userAnswer, questionData);
-            
-            const feedbackEl = exEl.querySelector('.feedback');
-            const attempts = parseInt(exEl.dataset.attempts) + 1;
-            exEl.dataset.attempts = attempts;
-            
-            if(isCorrect) {
-                feedbackEl.innerHTML = `✅ Correct!`;
-                feedbackEl.className = 'feedback correct';
-                exEl.style.borderColor = 'var(--success-green)';
-            } else {
-                allCorrect = false;
-                let hintHTML = '';
-                if (questionData.hints) {
-                    if (attempts === 2) hintHTML = `<div class="hint">💡 Hint 1: ${questionData.hints[0]}</div>`;
-                    if (attempts === 3) hintHTML = `<div class="hint">💡 Hint 2: ${questionData.hints[1]}</div>`;
-                    if (attempts >= 4) hintHTML = `<div class="hint">💡 Antwoord: ${questionData.hints[2]}</div>`;
-                }
-                feedbackEl.innerHTML = `❌ Probeer het nog eens. ${hintHTML}`;
-                feedbackEl.className = 'feedback incorrect';
-            }
-            feedbackEl.style.display = 'block';
-        });
-        
-        section.attempts++;
-        if (allCorrect) {
-            section.isComplete = true;
-        }
-        saveState();
-        updateUI();
-    }
-
+    
+    // ... (rest van de ongewijzigde UI en navigatie functies)
     function updateUI() {
         mainTitle.textContent = appState.currentSectionIndex < 3 ? appState.sections[appState.currentSectionIndex].title : "🏆 Resultaten";
         document.getElementById('completion-counter').textContent = `Voltooid: ${appState.totalCompletions} keer`;
@@ -215,165 +160,150 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
         appState.sections.forEach(sec => {
             const score = Math.max(0, 100 - (sec.attempts - 1) * 25);
-            container.innerHTML += `
-            <div class="resultaat-item ${score === 100 ? 'perfect' : ''}">
-                <span>${sec.title}</span>
-                <span class="resultaat-percentage">${score}%</span>
-            </div>`;
+            container.innerHTML += `<div class="resultaat-item ${score === 100 ? 'perfect' : ''}"><span>${sec.title}</span><span class="resultaat-percentage">${score}%</span></div>`;
         });
         const totalScore = Math.round(appState.sections.reduce((acc, s) => acc + Math.max(0, 100 - (s.attempts - 1) * 25), 0) / 3);
-        
-        container.innerHTML += `
-            <div class="resultaat-item">
-                <span><strong>Totaalscore</strong></span>
-                <span class="resultaat-percentage">${totalScore}%</span>
-            </div>
-            <p>Fantastisch werk! Je bent nu een expert in dichtheid. Klik hieronder om de module opnieuw te starten met een nieuwe set vragen.</p>`;
-    }
-    
-    // =================================================================================
-    // 5. HELPER FUNCTIES
-    // =================================================================================
-    function generateQuestionHTML(q, sectionId) {
-        let content = '';
-        if (q.type === 'mc') {
-            const optionsHTML = q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-            content = `<select><option value="">Kies een antwoord...</option>${optionsHTML}</select>`;
-        } else if (q.type === 'formula') {
-            const parts = ['ρ', 'm', 'V'];
-            const createSelect = () => `<select><option value="">kies...</option>${parts.map(p => `<option value="${p}">${p}</option>`).join('')}</select>`;
-            content = `<div class="formula-container">${createSelect()} = ${createSelect()} / ${createSelect()}</div>`;
-        } else if (q.type === 'sort') {
-            let s = [...q.items]; while (s.join(',') === q.answer) { s.sort(() => 0.5 - Math.random()); }
-            content = `<div class="drop-container"><div class="source-list">${s.map(i => `<div class="draggable" draggable="true">${i}</div>`).join('')}</div><div class="target-list"></div></div>`;
-        } else { // stappenplan
-            const stofInput = q.stof ? `<hr><div class="stap-rij"><label>De stof is:</label><input class="stof-input" type="text" placeholder="Naam materiaal"></div>` : '';
-            content = `<div class="stappenplan-container">
-                <div class="stap-rij"><label>Stap 1:</label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(eenheden)}</div>
-                <div class="stap-rij"><label></label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(eenheden)}</div>
-                <div class="stap-rij"><label>Stap 2:</label>${createDropdown(grootheden)}<span>=</span>${createDropdown(grootheden)}${createDropdown(operatoren)}${createDropdown(grootheden)}</div>
-                <div class="stap-rij"><label>Stap 3:</label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(operatoren)}<input type="text" placeholder="waarde"></div>
-                <div class="stap-rij"><label>Stap 4:</label>${createDropdown(grootheden)}<span>=</span><input class="antwoord-input" type="text" placeholder="antwoord">${createDropdown(eenheden)}</div>
-                ${stofInput}
-            </div>`;
-        }
-        return `<div class="exercise" data-question-id="${q.id}" data-attempts="0"><h3>${q.prompt || `Bereken de dichtheid van het ${q.k}e blok.`}</h3>${content}<div class="feedback"></div></div>`;
+        container.innerHTML += `<div class="resultaat-item"><span><strong>Totaalscore</strong></span><span class="resultaat-percentage">${totalScore}%</span></div><p>Fantastisch werk! Klik hieronder om de module opnieuw te starten met een nieuwe set vragen.</p>`;
     }
 
-    function getUserAnswer(exerciseEl) {
-        const qId = exerciseEl.dataset.questionId;
-        const qData = findQuestionById(qId);
+    // =================================================================================
+    // 5. NAKIJK LOGICA (MET CORRECTIES)
+    // =================================================================================
+
+    function checkAnswers() {
+        const section = appState.sections[appState.currentSectionIndex];
+        let allCorrect = true;
+
+        const questionsContainer = document.getElementById(`${section.id}-vragen`);
+        const exerciseElements = questionsContainer.querySelectorAll('.exercise');
+
+        exerciseElements.forEach(exEl => {
+            const qId = exEl.dataset.questionId;
+            const questionData = findQuestionById(qId);
+            const userAnswer = getUserAnswer(exEl, questionData.type); // <-- Belangrijke toevoeging
+            const isCorrect = checkAnswer(userAnswer, questionData);
+            
+            const feedbackEl = exEl.querySelector('.feedback');
+            const attempts = parseInt(exEl.dataset.attempts) + 1;
+            exEl.dataset.attempts = attempts;
+            
+            if(isCorrect) {
+                feedbackEl.innerHTML = `✅ Correct!`;
+                feedbackEl.className = 'feedback correct';
+                exEl.style.borderColor = 'var(--success-green)';
+            } else {
+                allCorrect = false;
+                let hintHTML = '';
+                if (questionData.hints) {
+                    if (attempts === 2) hintHTML = `<div class="hint">💡 Hint 1: ${questionData.hints[0]}</div>`;
+                    if (attempts === 3) hintHTML = `<div class="hint">💡 Hint 2: ${questionData.hints[1]}</div>`;
+                    if (attempts >= 4) hintHTML = `<div class="hint">💡 Antwoord: ${questionData.hints[2]}</div>`;
+                }
+                feedbackEl.innerHTML = `❌ Probeer het nog eens. ${hintHTML}`;
+                feedbackEl.className = 'feedback incorrect';
+            }
+            feedbackEl.style.display = 'block';
+        });
         
-        if (qData.type === 'mc') { return exerciseEl.querySelector('select').value; }
-        if (qData.type === 'formula') { const selects = exerciseEl.querySelectorAll('select'); return `${selects[0].value}=${selects[1].value}/${selects[2].value}`; }
-        if (qData.type === 'sort') { return Array.from(exerciseEl.querySelectorAll('.target-list .draggable')).map(d => d.textContent).join(','); }
-        
-        if (qId.startsWith('s') || qId.startsWith('c')) { // Stappenplan
-            const antwoord = exerciseEl.querySelector('.antwoord-input').value.trim();
-            const stofInput = exerciseEl.querySelector('.stof-input');
-            const stof = stofInput ? stofInput.value.trim() : null;
-            return { antwoord, stof };
+        if (allCorrect) {
+            section.isComplete = true;
+            section.attempts = section.attempts || 1; // Zorg dat poging 1 is als het in 1x goed is
+        } else {
+            section.attempts++;
         }
-        return '';
+        saveState();
+        updateUI();
     }
     
-    // --- GECORRIGEERDE FUNCTIE ---
+    // --- VERNIEUWDE FUNCTIE ---
+    function getUserAnswer(exerciseEl, type) {
+        if (type === 'mc') {
+            const select = exerciseEl.querySelector('select');
+            return select ? select.value : "";
+        }
+        if (type === 'formula') {
+            const selects = exerciseEl.querySelectorAll('select');
+            return `${selects[0].value}=${selects[1].value}/${selects[2].value}`;
+        }
+        if (type === 'sort') {
+            return Array.from(exerciseEl.querySelectorAll('.target-list .draggable')).map(d => d.textContent).join(',');
+        }
+        
+        // Default voor stappenplan (zowel simulatie als controle)
+        const antwoord = exerciseEl.querySelector('.antwoord-input')?.value.trim();
+        const stofInput = exerciseEl.querySelector('.stof-input');
+        const stof = stofInput ? stofInput.value.trim() : null;
+        return { antwoord, stof };
+    }
+
+    // --- VERBETERDE FUNCTIE ---
     function checkAnswer(userAnswer, questionData) {
-        if (typeof userAnswer === 'object' && userAnswer !== null) { // Stappenplan
-            let isCorrect = compareNumericAnswers(userAnswer.antwoord, questionData.answer);
+        if (questionData.type === 'stappenplan' || questionData.id.startsWith('s')) { // Stappenplan
+            let isCorrect = compareNumericAnswers(userAnswer.antwoord, questionData.answer || questionData.d);
             if (questionData.stof) {
                 isCorrect = isCorrect && userAnswer.stof.toLowerCase() === questionData.stof.toLowerCase();
             }
             return isCorrect;
-        } else { // Andere types
+        } else { // Andere types (mc, formula, sort)
             return userAnswer.toLowerCase() === questionData.answer.toLowerCase();
         }
     }
 
     function compareNumericAnswers(userStr, correctStr) {
+        if (!userStr || !correctStr) return false;
         const userNum = parseFloat(userStr.replace(',', '.'));
         const correctNum = parseFloat(correctStr);
 
         if (isNaN(userNum) || isNaN(correctNum)) return false;
-
-        const tolerance = 0.02; // Marge voor kleine afrondingsverschillen
+        
+        const tolerance = 0.02; // Marge voor afrondingsverschillen (bv 11.32 vs 11.34)
         return Math.abs(userNum - correctNum) <= tolerance;
     }
 
-    function findQuestionById(id) {
-        for (const category in questionDB) {
-            if(category === 'simulatie') {
-                 for (const set in questionDB.simulatie) {
-                    const found = questionDB.simulatie[set].find(q => q.id === id); if (found) return found;
-                }
-            } else {
-                const found = questionDB[category].find(q => q.id === id); if (found) return found;
-            }
+    // =================================================================================
+    // 6. HELPER & INIT FUNCTIES (ongewijzigd t.o.v. vorige correctie)
+    // =================================================================================
+    function renderCurrentSection() {
+        const section = appState.sections[appState.currentSectionIndex];
+        if (!section) return; 
+        const container = document.getElementById(`${section.id}-vragen`);
+        if (!container) return;
+        container.innerHTML = '';
+        if (section.id === 'simulatie') {
+            const activeSet = document.querySelector('.set-btn.active')?.dataset.set || '1';
+            const questionIds = appState.activeQuestionIds.simulatie[`set${activeSet}`];
+            const questions = questionDB.simulatie[`set${activeSet}`].filter(q => questionIds.includes(q.id));
+            questions.forEach(q => container.innerHTML += generateQuestionHTML(q));
+        } else {
+            const questionIds = appState.activeQuestionIds[section.id];
+            const questions = questionDB[section.id].filter(q => questionIds.includes(q.id));
+            questions.forEach(q => container.innerHTML += generateQuestionHTML(q));
         }
+        setupDragAndDrop();
     }
-
-    function groupByPrefix(arr) {
-        const map = arr.reduce((acc, val) => { const prefix = val.slice(0, 2); (acc[prefix] = acc[prefix] || []).push(val); return acc; }, {});
-        return Object.values(map);
+    function generateQuestionHTML(q) {
+        let content = '';
+        if (q.type === 'mc') { const optionsHTML = q.options.map(opt => `<option value="${opt}">${opt}</option>`).join(''); content = `<select><option value="">Kies een antwoord...</option>${optionsHTML}</select>`;
+        } else if (q.type === 'formula') { const parts = ['ρ', 'm', 'V']; const createSelect = () => `<select><option value="">kies...</option>${parts.map(p => `<option value="${p}">${p}</option>`).join('')}</select>`; content = `<div class="formula-container">${createSelect()} = ${createSelect()} / ${createSelect()}</div>`;
+        } else if (q.type === 'sort') { let s = [...q.items]; while (s.join(',') === q.answer) { s.sort(() => 0.5 - Math.random()); } content = `<div class="drop-container"><div class="source-list">${s.map(i => `<div class="draggable" draggable="true">${i}</div>`).join('')}</div><div class="target-list"></div></div>`;
+        } else { const stofInput = q.stof ? `<hr><div class="stap-rij"><label>De stof is:</label><input class="stof-input" type="text" placeholder="Naam materiaal"></div>` : ''; content = `<div class="stappenplan-container"><div class="stap-rij"><label>Stap 1:</label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(eenheden)}</div><div class="stap-rij"><label></label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(eenheden)}</div><div class="stap-rij"><label>Stap 2:</label>${createDropdown(grootheden)}<span>=</span>${createDropdown(grootheden)}${createDropdown(operatoren)}${createDropdown(grootheden)}</div><div class="stap-rij"><label>Stap 3:</label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(operatoren)}<input type="text" placeholder="waarde"></div><div class="stap-rij"><label>Stap 4:</label>${createDropdown(grootheden)}<span>=</span><input class="antwoord-input" type="text" placeholder="antwoord">${createDropdown(eenheden)}</div>${stofInput}</div>`; }
+        return `<div class="exercise" data-question-id="${q.id}" data-attempts="0"><h3>${q.prompt || `Bereken de dichtheid van het ${q.k}e blok.`}</h3>${content}<div class="feedback"></div></div>`;
     }
-    
+    function findQuestionById(id) { for (const category in questionDB) { if(category === 'simulatie') { for (const set in questionDB.simulatie) { const found = questionDB.simulatie[set].find(q => q.id === id); if (found) return found; } } else { const found = questionDB[category].find(q => q.id === id); if (found) return found; } } }
+    function groupByPrefix(arr) { const map = arr.reduce((acc, val) => { const prefix = val.slice(0, 2); (acc[prefix] = acc[prefix] || []).push(val); return acc; }, {}); return Object.values(map); }
     function createDropdown(options) { let h = `<select><option value="">kies...</option>`; options.forEach(o => h += `<option value="${o}">${o}</option>`); return h + `</select>`; }
     function setupDragAndDrop() { const d=document.querySelectorAll('.draggable'),c=document.querySelectorAll('.source-list, .target-list');d.forEach(dr=>{dr.addEventListener('dragstart',()=>dr.classList.add('dragging'));dr.addEventListener('dragend',()=>dr.classList.remove('dragging'));});c.forEach(co=>{co.addEventListener('dragover',e=>{e.preventDefault();const a=getDragAfterElement(co,e.clientY),dr=document.querySelector('.dragging');if(a==null){co.appendChild(dr);}else{co.insertBefore(dr,a);}co.classList.add('over');});co.addEventListener('dragleave',()=>co.classList.remove('over'));co.addEventListener('drop',()=>co.classList.remove('over'));});}
     function getDragAfterElement(c,y){const d=[...c.querySelectorAll('.draggable:not(.dragging)')];return d.reduce((cl,ch)=>{const b=ch.getBoundingClientRect(),o=y-b.top-b.height/2;if(o<0&&o>cl.offset){return{offset:o,element:ch};}else{return cl;}},{offset:Number.NEGATIVE_INFINITY}).element;}
-    
-    // =================================================================================
-    // 6. EVENT LISTENERS
-    // =================================================================================
     checkBtn.addEventListener('click', checkAnswers);
-    nextBtn.addEventListener('click', () => {
-        if (appState.currentSectionIndex < 3) {
-            if (appState.currentSectionIndex === 2) {
-                appState.totalCompletions++;
-                localStorage.setItem('dichtheidCompletions', appState.totalCompletions);
-                appState.currentSectionIndex++;
-                // setupNewSession() wordt nu hier niet aangeroepen, pas bij reset
-            } else {
-                appState.currentSectionIndex++;
-            }
-            renderCurrentSection();
-            saveState();
-            updateUI();
-        }
-    });
-    prevBtn.addEventListener('click', () => {
-        if (appState.currentSectionIndex > 0) {
-            appState.currentSectionIndex--;
-            renderCurrentSection();
-            saveState();
-            updateUI();
-        }
-    });
-    navButtons.forEach(btn => btn.addEventListener('click', (e) => {
-        const targetIndex = parseInt(e.currentTarget.dataset.section);
-        if(!btn.disabled) {
-            appState.currentSectionIndex = targetIndex;
-            renderCurrentSection();
-            saveState();
-            updateUI();
-        }
-    }));
-    document.querySelectorAll('.set-btn').forEach(btn => btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        renderCurrentSection();
-    }));
-    document.getElementById('reset-btn')?.addEventListener('click', () => {
-        appState.currentSectionIndex = 0;
-        setupNewSession();
-        renderCurrentSection();
-        updateUI();
-    });
+    nextBtn.addEventListener('click', () => { if (appState.currentSectionIndex < 3) { if (appState.currentSectionIndex === 2) { appState.totalCompletions++; localStorage.setItem('dichtheidCompletions', appState.totalCompletions); } appState.currentSectionIndex++; renderCurrentSection(); saveState(); updateUI(); } });
+    prevBtn.addEventListener('click', () => { if (appState.currentSectionIndex > 0) { appState.currentSectionIndex--; renderCurrentSection(); saveState(); updateUI(); } });
+    navButtons.forEach(btn => btn.addEventListener('click', (e) => { const targetIndex = parseInt(e.currentTarget.dataset.section); if(!btn.disabled) { appState.currentSectionIndex = targetIndex; renderCurrentSection(); saveState(); updateUI(); } }));
+    document.querySelectorAll('.set-btn').forEach(btn => btn.addEventListener('click', (e) => { document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('active')); e.target.classList.add('active'); renderCurrentSection(); }));
+    document.getElementById('reset-btn')?.addEventListener('click', () => { appState.currentSectionIndex = 0; setupNewSession(); renderCurrentSection(); updateUI(); });
     document.getElementById('toggle-table-btn').onclick = () => modal.style.display = "block";
     document.querySelector('.close-btn').onclick = () => modal.style.display = "none";
     window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
     function vulDichtheidTabel() { const t=document.getElementById('dichtheid-tabel'); t.innerHTML='<tr><th>Stof</th><th>Dichtheid (g/cm³)</th></tr>'; dichtheidTabelData.forEach(i=>{t.innerHTML+=`<tr><td>${i.stof}</td><td>${i.dichtheid}</td></tr>`;});}
     vulDichtheidTabel();
-
-    // --- START DE APP ---
     init();
 });
