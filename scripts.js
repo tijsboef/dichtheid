@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 1. STATE MANAGEMENT & CONFIG
     // =================================================================================
-    const APP_VERSION = "1.2"; // VERHOOG DIT NUMMER OM LOCALSTORAGE TE RESETTEN BIJ UPDATES
+    const APP_VERSION = "1.3"; // VERHOOG DIT NUMMER OM LOCALSTORAGE TE RESETTEN BIJ UPDATES
     let appState = {};
     const MAX_COMPLETIONS = 4;
 
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedStateJSON = localStorage.getItem('dichtheidAppState');
         if (savedStateJSON) {
             const savedState = JSON.parse(savedStateJSON);
-            // Automatische reset als de app-versie niet overeenkomt
             if (savedState.appVersion !== APP_VERSION) {
                 localStorage.removeItem('dichtheidAppState');
                 appState = JSON.parse(JSON.stringify(defaultState));
@@ -53,22 +52,23 @@ document.addEventListener('DOMContentLoaded', () => {
         theorie: [
             { id: 't1_v1', type: 'mc', prompt: "Wat beschrijft dichtheid het best?", options: ["De zwaarte van een object", "Massa per volume-eenheid", "De grootte van een object"], answer: "Massa per volume-eenheid", hints: ["Denk aan de eenheid: g/cm³.", "Het is een verhouding tussen twee grootheden.", "Dichtheid is massa gedeeld door..."] },
             { id: 't1_v2', type: 'mc', prompt: "Als twee blokken hetzelfde volume hebben, maar blok A is zwaarder, wat kun je zeggen over de dichtheid?", options: ["Blok A heeft een lagere dichtheid", "Blok B heeft een hogere dichtheid", "Blok A heeft een hogere dichtheid"], answer: "Blok A heeft een hogere dichtheid", hints: ["Meer massa in hetzelfde volume betekent...", "De formule is ρ = m / V.", "Als 'm' groter is en 'V' gelijk, wat gebeurt er dan met 'ρ'?"] },
-            { id: 't2_v1', type: 'formula', prompt: "Stel de formule voor dichtheid samen.", answer: "ρ=m/V", hints: ["ρ (rho) is het symbool voor dichtheid.", "Massa wordt gedeeld door volume.", "De formule is ρ = m / V."] },
+            { id: 't2_v1', type: 'formula', prompt: "Stel de formule voor dichtheid samen.", answer: "ρ=m/V", hints: ["ρ (rho) is het symbool voor dichtheid.", "Massa wordt gedeeld door volume.", "De formule is rho = m / V."] },
             { id: 't2_v2', type: 'mc', prompt: "Welke formule gebruik je om de massa (m) te berekenen als je de dichtheid (ρ) en het volume (V) weet?", options: ["m = V / ρ", "m = ρ / V", "m = ρ * V"], answer: "m = ρ * V", hints: ["De basisformule is ρ = m / V.", "Je moet de formule omschrijven.", "Vermenigvuldig beide kanten van de basisformule met V."] },
             { id: 't3_v1', type: 'sort', prompt: "Zet het stappenplan in de juiste volgorde.", items: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord + eenheid"], answer: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord + eenheid", hints: ["Je begint altijd met inventariseren wat je weet.", "De formule komt vóór het invullen.", "Het antwoord is de allerlaatste stap."] }
         ],
         simulatie: {
-            set1: [{id:'s1_1',k:'Paars',m:'19.3',v:'5.5',d:'3.51'},{id:'s1_2',k:'Blauw',m:'0.4',v:'1',d:'0.40'},{id:'s1_3',k:'Geel',m:'19.32',v:'1',d:'19.32'},{id:'s1_4',k:'Rood',m:'5',v:'5',d:'1.00'},{id:'s1_5',k:'Groen',m:'2.8',v:'7',d:'0.40'}],
-            set2: [{id:'s2_1',k:'Lichtbruin',m:'18',v:'1.59',d:'11.32'},{id:'s2_2',k:'Donkerbruin',m:'10.8',v:'4',d:'2.70'},{id:'s2_3',k:'Groen',m:'2.7',v:'1',d:'2.70'},{id:'s2_4',k:'Roze',m:'18',v:'4',d:'4.50'},{id:'s2_5',k:'Lila',m:'44.8',v:'5',d:'8.96'}],
-            set3: [{id:'s3_1',k:'Bordeaux',m:'2.85',v:'3',d:'0.95'},{id:'s3_2',k:'Grijs',m:'6',v:'6',d:'1.00'},{id:'s3_3',k:'Beige',m:'23.4',v:'3',d:'7.80'},{id:'s3_4',k:'Camel',m:'2',v:'5',d:'0.40'},{id:'s3_5',k:'Wit',m:'6',v:'6.32',d:'0.95'}]
+            set1: [{id:'s1_1', type: 'stappenplan', k:'Paars',m:'19.3',v:'5.5',d:'3.51'},{id:'s1_2', type: 'stappenplan', k:'Blauw',m:'0.4',v:'1',d:'0.40'},{id:'s1_3', type: 'stappenplan', k:'Geel',m:'19.32',v:'1',d:'19.32'},{id:'s1_4', type: 'stappenplan', k:'Rood',m:'5',v:'5',d:'1.00'},{id:'s1_5', type: 'stappenplan', k:'Groen',m:'2.8',v:'7',d:'0.40'}],
+            set2: [{id:'s2_1', type: 'stappenplan', k:'Lichtbruin',m:'18',v:'1.59',d:'11.32'},{id:'s2_2', type: 'stappenplan', k:'Donkerbruin',m:'10.8',v:'4',d:'2.70'},{id:'s2_3', type: 'stappenplan', k:'Groen',m:'2.7',v:'1',d:'2.70'},{id:'s2_4', type: 'stappenplan', k:'Roze',m:'18',v:'4',d:'4.50'},{id:'s2_5', type: 'stappenplan', k:'Lila',m:'44.8',v:'5',d:'8.96'}],
+            set3: [{id:'s3_1', type: 'stappenplan', k:'Bordeaux',m:'2.85',v:'3',d:'0.95'},{id:'s3_2', type: 'stappenplan', k:'Grijs',m:'6',v:'6',d:'1.00'},{id:'s3_3', type: 'stappenplan', k:'Beige',m:'23.4',v:'3',d:'7.80'},{id:'s3_4', type: 'stappenplan', k:'Camel',m:'2',v:'5',d:'0.40'},{id:'s3_5', type: 'stappenplan', k:'Wit',m:'6',v:'6.32',d:'0.95'}]
         },
+        // --- GECORRIGEERDE SECTIE ---
         controle: [
-            { id: 'c1_v1', prompt: "Een blokje heeft 270 g massa en 100 cm³ volume. Bereken de dichtheid.", data: {m:'270', v:'100'}, answer: '2.7', hints: ["Formule: ρ = m / V.", "Deel 270 door 100.", "Het antwoord is 2,7 g/cm³."]},
-            { id: 'c1_v2', prompt: "Een object van 0.8 kg heeft een volume van 1 L. Bereken de dichtheid in g/cm³.", data: {m:'800', v:'1000'}, answer: '0.8', hints: ["Reken eerst de eenheden om! 1 kg = 1000 g, 1 L = 1000 cm³.", "Deel 800 door 1000.", "De dichtheid is 0,8 g/cm³."]},
-            { id: 'c2_v1', prompt: "Een gouden ring heeft 2 cm³ volume. Bereken de massa. Zoek de dichtheid van goud op in de tabel.", data: {p:'19.32', v:'2'}, answer: '38.64', hints: ["Zoek eerst de dichtheid van goud.", "Formule: m = ρ * V.", "Vermenigvuldig 19,32 met 2."]},
-            { id: 'c2_v2', prompt: "Een koperen draad heeft een volume van 10 cm³. Bereken de massa.", data: {p:'8.96', v:'10'}, answer: '89.6', hints: ["Zoek de dichtheid van koper in de tabel.", "Gebruik m = ρ * V.", "Het antwoord is 89,6 g."]},
-            { id: 'c3_v1', prompt: "Een blokje van 780 g heeft 100 cm³ volume. Bereken de dichtheid en benoem het materiaal.", data: {m:'780', v:'100'}, answer: '7.8', stof: 'Staal', hints: ["Bereken eerst de dichtheid.", "Vergelijk je antwoord met de tabel.", "De dichtheid is 7,8 g/cm³, wat staal is."]},
-            { id: 'c3_v2', prompt: "Een blokje van 270 g heeft 100 cm³ volume. Bereken de dichtheid en benoem het materiaal.", data: {m:'270', v:'100'}, answer: '2.7', stof: 'Aluminium', hints: ["Dichtheid is massa gedeeld door volume.", "Je berekent 2,7 g/cm³.", "Kijk in de tabel welke stof dit is."]}
+            { id: 'c1_v1', type: 'stappenplan', prompt: "Een blokje heeft 270 g massa en 100 cm³ volume. Bereken de dichtheid.", data: {m:'270', v:'100'}, answer: '2.7', hints: ["Formule: ρ = m / V.", "Deel 270 door 100.", "Het antwoord is 2,7 g/cm³."]},
+            { id: 'c1_v2', type: 'stappenplan', prompt: "Een object van 0.8 kg heeft een volume van 1 L. Bereken de dichtheid in g/cm³.", data: {m:'800', v:'1000'}, answer: '0.8', hints: ["Reken eerst de eenheden om! 1 kg = 1000 g, 1 L = 1000 cm³.", "Deel 800 door 1000.", "De dichtheid is 0,8 g/cm³."]},
+            { id: 'c2_v1', type: 'stappenplan', prompt: "Een gouden ring heeft 2 cm³ volume. Bereken de massa. Zoek de dichtheid van goud op in de tabel.", data: {p:'19.32', v:'2'}, answer: '38.64', hints: ["Zoek eerst de dichtheid van goud.", "Formule: m = ρ * V.", "Vermenigvuldig 19,32 met 2."]},
+            { id: 'c2_v2', type: 'stappenplan', prompt: "Een koperen draad heeft een volume van 10 cm³. Bereken de massa.", data: {p:'8.96', v:'10'}, answer: '89.6', hints: ["Zoek de dichtheid van koper in de tabel.", "Gebruik m = ρ * V.", "Het antwoord is 89,6 g."]},
+            { id: 'c3_v1', type: 'stappenplan', prompt: "Een blokje van 780 g heeft 100 cm³ volume. Bereken de dichtheid en benoem het materiaal.", data: {m:'780', v:'100'}, answer: '7.8', stof: 'Staal', hints: ["Bereken eerst de dichtheid.", "Vergelijk je antwoord met de tabel.", "De dichtheid is 7,8 g/cm³, wat staal is."]},
+            { id: 'c3_v2', type: 'stappenplan', prompt: "Een blokje van 270 g heeft 100 cm³ volume. Bereken de dichtheid en benoem het materiaal.", data: {m:'270', v:'100'}, answer: '2.7', stof: 'Aluminium', hints: ["Dichtheid is massa gedeeld door volume.", "Je berekent 2,7 g/cm³.", "Kijk in de tabel welke stof dit is."]}
         ]
     };
 
@@ -118,7 +118,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
     }
     
-    // ... (rest van de ongewijzigde UI en navigatie functies)
     function updateUI() {
         mainTitle.textContent = appState.currentSectionIndex < 3 ? appState.sections[appState.currentSectionIndex].title : "🏆 Resultaten";
         document.getElementById('completion-counter').textContent = `Voltooid: ${appState.totalCompletions} keer`;
@@ -126,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contentSections.forEach((sec, i) => sec.classList.toggle('active', i === appState.currentSectionIndex));
 
         navButtons.forEach((btn, i) => {
-            if (i < 3) { // Sectie knoppen
+            if (i < 3) {
                 const section = appState.sections[i];
                 btn.disabled = i > 0 && !appState.sections[i-1].isComplete;
                 btn.classList.toggle('active', i === appState.currentSectionIndex);
@@ -139,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 progressBar.style.width = `${score}%`;
                 progressBar.style.backgroundColor = score > 75 ? 'var(--success-green)' : score > 25 ? 'var(--warning-yellow)' : 'var(--danger-red)';
 
-            } else { // Resultaten knop
+            } else {
                  btn.disabled = !appState.sections[2].isComplete;
                  btn.classList.toggle('active', appState.currentSectionIndex === 3);
             }
@@ -167,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =================================================================================
-    // 5. NAKIJK LOGICA (MET CORRECTIES)
+    // 5. NAKIJK LOGICA
     // =================================================================================
 
     function checkAnswers() {
@@ -180,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
         exerciseElements.forEach(exEl => {
             const qId = exEl.dataset.questionId;
             const questionData = findQuestionById(qId);
-            const userAnswer = getUserAnswer(exEl, questionData.type); // <-- Belangrijke toevoeging
+            const userAnswer = getUserAnswer(exEl, questionData.type);
             const isCorrect = checkAnswer(userAnswer, questionData);
             
             const feedbackEl = exEl.querySelector('.feedback');
@@ -207,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (allCorrect) {
             section.isComplete = true;
-            section.attempts = section.attempts || 1; // Zorg dat poging 1 is als het in 1x goed is
+            section.attempts = section.attempts || 1;
         } else {
             section.attempts++;
         }
@@ -215,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     }
     
-    // --- VERNIEUWDE FUNCTIE ---
     function getUserAnswer(exerciseEl, type) {
         if (type === 'mc') {
             const select = exerciseEl.querySelector('select');
@@ -228,23 +226,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'sort') {
             return Array.from(exerciseEl.querySelectorAll('.target-list .draggable')).map(d => d.textContent).join(',');
         }
-        
-        // Default voor stappenplan (zowel simulatie als controle)
-        const antwoord = exerciseEl.querySelector('.antwoord-input')?.value.trim();
-        const stofInput = exerciseEl.querySelector('.stof-input');
-        const stof = stofInput ? stofInput.value.trim() : null;
-        return { antwoord, stof };
+        if (type === 'stappenplan') {
+            const antwoord = exerciseEl.querySelector('.antwoord-input')?.value.trim();
+            const stofInput = exerciseEl.querySelector('.stof-input');
+            const stof = stofInput ? stofInput.value.trim() : null;
+            return { antwoord, stof };
+        }
+        return '';
     }
 
-    // --- VERBETERDE FUNCTIE ---
     function checkAnswer(userAnswer, questionData) {
-        if (questionData.type === 'stappenplan' || questionData.id.startsWith('s')) { // Stappenplan
+        if (questionData.type === 'stappenplan') {
             let isCorrect = compareNumericAnswers(userAnswer.antwoord, questionData.answer || questionData.d);
             if (questionData.stof) {
                 isCorrect = isCorrect && userAnswer.stof.toLowerCase() === questionData.stof.toLowerCase();
             }
             return isCorrect;
-        } else { // Andere types (mc, formula, sort)
+        } else {
             return userAnswer.toLowerCase() === questionData.answer.toLowerCase();
         }
     }
@@ -256,12 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isNaN(userNum) || isNaN(correctNum)) return false;
         
-        const tolerance = 0.02; // Marge voor afrondingsverschillen (bv 11.32 vs 11.34)
+        const tolerance = 0.02; 
         return Math.abs(userNum - correctNum) <= tolerance;
     }
 
     // =================================================================================
-    // 6. HELPER & INIT FUNCTIES (ongewijzigd t.o.v. vorige correctie)
+    // 6. HELPER & INIT FUNCTIES
     // =================================================================================
     function renderCurrentSection() {
         const section = appState.sections[appState.currentSectionIndex];
