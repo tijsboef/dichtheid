@@ -1,447 +1,131 @@
 /* --- Styling System Documentatie (Schoolstijl) --- */
 :root {
-	--school-dark-green: #004d40;
-	--school-light-green: #a7f3d0;
-	--school-light-blue: #a5f3fc;
-	--success-green: #10B981;
-	--primary-blue: #3B82F6;
-	--warning-yellow: #F59E0B;
-	--danger-red: #EF4444;
-	--gray-100: #f3f4f6;
-	--gray-300: #d1d5db;
-	--gray-600: #6b7280;
-	--gray-800: #1f2937;
-	--font-family: 'Inter', sans-serif;
-	--transition-speed: 0.3s;
-	--transition-easing: ease-in-out;
+    --school-dark-green: #004d40;
+    --school-light-green: #a7f3d0;
+    --school-light-blue: #a5f3fc;
+    --success-green: #10B981;
+    --primary-blue: #3B82F6;
+    --warning-yellow: #F59E0B;
+    --danger-red: #EF4444;
+    --gray-100: #f3f4f6;
+    --gray-300: #d1d5db;
+    --gray-600: #6b7280;
+    --gray-800: #1f2937;
+    --font-family: 'Inter', sans-serif;
+    --transition-speed: 0.3s;
+    --transition-easing: ease-in-out;
 }
+
 /* --- Basis & Layout --- */
-
-*, *::before, *::after {
-	box-sizing: border-box;
-}
-
+*, *::before, *::after { box-sizing: border-box; }
 body {
-	font-family: var(--font-family);
-	background-color: var(--gray-100);
-	color: var(--gray-800);
-	margin: 0;
-	line-height: 1.6;
+    font-family: var(--font-family);
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+    margin: 0;
+    line-height: 1.6;
 }
-
 .app-container {
-	display: flex;
-	height: 100vh;
+    display: flex;
+    height: 100vh;
 }
+
 /* --- Sidebar --- */
-
 .sidebar {
-	width: 280px;
-	background-color: var(--school-dark-green);
-	color: white;
-	display: flex;
-	flex-direction: column;
-	padding: 1.5rem;
-	flex-shrink: 0;
+    width: 280px;
+    background-color: var(--school-dark-green);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    flex-shrink: 0;
 }
+.sidebar-header h2 { text-align: center; margin: 0 0 2rem 0; font-size: 1.8rem; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 1rem; flex-grow: 1; }
+.nav-btn { background: transparent; border: 2px solid transparent; color: white; text-align: left; padding: 0.8rem 1rem; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; display: flex; flex-direction: column; gap: 0.5rem; transition: background-color var(--transition-speed); }
+.nav-btn:hover:not(:disabled) { background-color: rgba(255, 255, 255, 0.1); }
+.nav-btn.active { background-color: var(--school-light-green); color: var(--school-dark-green); border-color: var(--success-green); }
+.nav-btn:disabled { color: var(--gray-600); cursor: not-allowed; }
+.nav-icon { font-size: 1.2rem; }
+.progress-bar-container { width: 100%; height: 8px; background-color: rgba(255, 255, 255, 0.2); border-radius: 4px; overflow: hidden; }
+.progress-bar { height: 100%; width: 0%; background-color: var(--success-green); transition: width var(--transition-speed); }
+.nav-btn.active .progress-bar { background-color: var(--school-dark-green); }
 
-.sidebar-header h2 {
-	text-align: center;
-	margin: 0 0 2rem 0;
-	font-size: 1.8rem;
-}
-
-.sidebar-nav {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	flex-grow: 1;
-}
-
-.nav-btn {
-	background: transparent;
-	border: 2px solid transparent;
-	color: white;
-	text-align: left;
-	padding: 0.8rem 1rem;
-	border-radius: 8px;
-	cursor: pointer;
-	font-size: 1rem;
-	font-weight: 600;
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-	transition: background-color var(--transition-speed);
-}
-
-.nav-btn:hover:not(:disabled) {
-	background-color: rgba(255, 255, 255, 0.1);
-}
-
-.nav-btn.active {
-	background-color: var(--school-light-green);
-	color: var(--school-dark-green);
-	border-color: var(--success-green);
-}
-
-.nav-btn:disabled {
-	color: var(--gray-600);
-	cursor: not-allowed;
-}
-
-.nav-icon {
-	font-size: 1.2rem;
-}
-
-.progress-bar-container {
-	width: 100%;
-	height: 8px;
-	background-color: rgba(255, 255, 255, 0.2);
-	border-radius: 4px;
-	overflow: hidden;
-}
-
-.progress-bar {
-	height: 100%;
-	width: 0%;
-	background-color: var(--success-green);
-	transition: width var(--transition-speed);
-}
-
-.nav-btn.active .progress-bar {
-	background-color: var(--school-dark-green);
-}
 /* --- Main Content (Bredere layout) --- */
-
 .main-content {
-	flex-grow: 1;
-	padding: 2rem 3rem;
-	display: flex;
-	flex-direction: column;
-	max-height: 100vh;
-	overflow-y: auto;
-	max-width: calc(1366px - 280px);
-	/* Optimalisatie voor schermbreedte */
-	margin: 0 auto;
+    flex-grow: 1;
+    padding: 2rem 3rem;
+    display: flex;
+    flex-direction: column;
+    max-height: 100vh;
+    overflow-y: auto;
+    max-width: calc(1366px - 280px);
+    margin: 0 auto;
 }
+.main-header { border-bottom: 2px solid var(--gray-300); padding-bottom: 1rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+.main-header h1 { color: var(--school-dark-green); margin: 0; font-size: 2rem; }
+#completion-counter { font-weight: 600; background-color: var(--school-light-blue); color: var(--school-dark-green); padding: 0.5rem 1rem; border-radius: 20px; }
 
-.main-header {
-	border-bottom: 2px solid var(--gray-300);
-	padding-bottom: 1rem;
-	margin-bottom: 2rem;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.main-header h1 {
-	color: var(--school-dark-green);
-	margin: 0;
-	font-size: 2rem;
-}
-
-#completion-counter {
-	font-weight: 600;
-	background-color: var(--school-light-blue);
-	color: var(--school-dark-green);
-	padding: 0.5rem 1rem;
-	border-radius: 20px;
-}
 /* --- Content Secties --- */
+.content-sectie { display: none; }
+.content-sectie.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-.content-sectie {
-	display: none;
-}
+.vragen-container { display: flex; flex-direction: row; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+#theorie-sectie .vragen-container { flex-direction: column; }
 
-.content-sectie.active {
-	display: block;
-	animation: fadeIn 0.5s ease-in-out;
-}
+.exercise { background-color: white; padding: 1.5rem; border-radius: 8px; border-left: 5px solid var(--school-light-blue); box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex: 1 1 31%; min-width: 350px; }
+.exercise label, .exercise h3 { font-weight: 700; font-size: 1.1rem; margin-bottom: 1rem; color: var(--school-dark-green); }
 
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
+/* --- Algemene Component Styling --- */
+input, select { padding: 0.5rem; border: 2px solid var(--gray-300); border-radius: 6px; font-size: 0.9rem; transition: border-color var(--transition-speed); }
+select { appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right .7em top 50%; background-size: .65em auto; padding-right: 2em !important; }
+input:focus, select:focus { border-color: var(--primary-blue); outline: none; }
+.btn { padding: 0.8rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all var(--transition-speed); }
+.btn-primary { background-color: var(--success-green); color: white; }
+.btn-primary:hover { background-color: #059669; transform: translateY(-2px); }
+.btn-secondary { background-color: var(--gray-600); color: white; }
+.btn-secondary:hover { background-color: var(--gray-800); }
+.main-footer { margin-top: auto; padding-top: 2rem; display: flex; justify-content: space-between; border-top: 2px solid var(--gray-300); }
+.simulation-container { height: 500px; margin-bottom: 1.5rem;}
 
-.vragen-container {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 2rem;
-}
+/* --- Sectie 1: Theorie Vragen Styling --- */
+#theorie-sectie .exercise { min-width: 100%; }
+#theorie-sectie .exercise select { max-width: 400px; }
+.formula-wrapper { display: flex; align-items: center; gap: 1rem; }
+.formula-fraction { display: inline-flex; flex-direction: column; text-align: center; }
+.formula-fraction .numerator { padding-bottom: 0.5rem; }
+.formula-fraction .denominator { border-top: 2px solid var(--gray-800); padding-top: 0.5rem; }
+.formula-fraction select { width: 80px; font-size: 0.9rem; padding: 0.4rem; }
+.formula-wrapper .equals { font-size: 2rem; font-weight: bold; }
 
-#theorie-sectie .vragen-container {
-	flex-direction: column;
-	/* Theorievragen onder elkaar */
-}
+/* --- Stappenplan Styling (Sectie 2 & 3) --- */
+.stappenplan-container { margin-top: 1rem; padding: 1rem; background-color: var(--gray-100); border-radius: 5px; display: flex; flex-direction: column; gap: 0.75rem; }
+.stap-rij { display: flex; align-items: center; gap: 0.4rem; }
+.stap-rij label { font-weight: bold; font-size: 0.9rem; min-width: 55px; }
+.stap-rij input, .stap-rij select { width: 85px; font-size: 0.85rem; padding: 0.4rem; }
+.stap-rij input.antwoord-input { width: 100px; }
+.stap-rij span.equals { font-weight: bold; }
 
-.exercise {
-	background-color: white;
-	padding: 1.5rem;
-	border-radius: 8px;
-	border-left: 5px solid var(--school-light-blue);
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-	flex: 1 1 30%;
-	min-width: 350px;
-	/* Flex voor naast elkaar */
-}
+/* --- Feedback & Hints --- */
+.feedback { margin-top: 1rem; padding: 1rem; border-radius: 6px; font-weight: 600; display: none; }
+.feedback.correct { background-color: var(--school-light-green); color: var(--school-dark-green); border-left: 5px solid var(--success-green); }
+.feedback.incorrect { background-color: #fee2e2; color: #991b1b; border-left: 5px solid var(--danger-red); }
+.hint { margin-top: 1rem; padding: 0.8rem; background-color: #fefce8; color: #a16207; border-left: 5px solid var(--warning-yellow); border-radius: 6px; }
 
-.exercise label, .exercise h3 {
-	font-weight: 700;
-	font-size: 1.2rem;
-	margin-bottom: 1rem;
-	color: var(--school-dark-green);
-}
-/* --- Styling Componenten & Vragen --- */
-
-input, select {
-	padding: 0.75rem;
-	border: 2px solid var(--gray-300);
-	border-radius: 6px;
-	font-size: 1rem;
-	transition: border-color var(--transition-speed);
-}
-
-select {
-	appearance: none;
-	background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
-	background-repeat: no-repeat;
-	background-position: right .7em top 50%;
-	background-size: .65em auto;
-	padding-right: 2.5em !important;
-}
-
-input:focus, select:focus {
-	border-color: var(--primary-blue);
-	outline: none;
-}
-
-.btn {
-	padding: 0.8rem 1.5rem;
-	border: none;
-	border-radius: 8px;
-	cursor: pointer;
-	font-size: 1rem;
-	font-weight: 600;
-	transition: all var(--transition-speed);
-}
-
-.btn-primary {
-	background-color: var(--success-green);
-	color: white;
-}
-
-.btn-primary:hover {
-	background-color: #059669;
-	transform: translateY(-2px);
-}
-
-.btn-secondary {
-	background-color: var(--gray-600);
-	color: white;
-}
-
-.btn-secondary:hover {
-	background-color: var(--gray-800);
-}
-
-.main-footer {
-	margin-top: auto;
-	padding-top: 2rem;
-	display: flex;
-	justify-content: space-between;
-	border-top: 2px solid var(--gray-300);
-}
-
-.simulation-container {
-	height: 550px;
-	/* Aangepaste hoogte */
-}
-/* Feedback & Hints */
-
-.feedback {
-	margin-top: 1rem;
-	padding: 1rem;
-	border-radius: 6px;
-	font-weight: 600;
-	display: none;
-}
-
-.feedback.correct {
-	background-color: var(--school-light-green);
-	color: var(--school-dark-green);
-	border-left: 5px solid var(--success-green);
-}
-
-.feedback.incorrect {
-	background-color: #fee2e2;
-	color: #991b1b;
-	border-left: 5px solid var(--danger-red);
-}
-
-.hint {
-	margin-top: 1rem;
-	padding: 0.8rem;
-	background-color: #fefce8;
-	color: #a16207;
-	border-left: 5px solid var(--warning-yellow);
-	border-radius: 6px;
-}
-/* Stappenplan & Dropdowns (Vaste breedte) */
-
-.stappenplan-container {
-	margin-top: 1rem;
-	padding: 1rem;
-	background-color: var(--gray-100);
-	border-radius: 5px;
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-}
-
-.stap-rij {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-}
-
-.stap-rij label {
-	font-weight: bold;
-	min-width: 60px;
-}
-
-.stap-rij input, .stap-rij select {
-	width: 120px;
-	flex-shrink: 0;
-}
-
-.stap-rij .equals {
-	font-weight: bold;
-	font-size: 1.2rem;
-}
-
-.formula-container select {
-	width: 130px;
-}
-
-#theorie-sectie .exercise select {
-	width: 100%;
-}
-/* Drop & Drag */
-
-.drop-container {
-	display: flex;
-	gap: 1rem;
-}
-
-.source-list, .target-list {
-	border: 2px dashed var(--gray-300);
-	border-radius: 8px;
-	padding: 1rem;
-	min-height: 200px;
-	width: 50%;
-}
-
-.draggable {
-	background-color: white;
-	padding: 0.75rem;
-	border-radius: 6px;
-	cursor: grab;
-	border: 1px solid var(--gray-300);
-}
-/* Modal */
-
-.modal {
-	display: none;
-	position: fixed;
-	z-index: 1000;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	overflow: auto;
-	background-color: rgba(0, 0, 0, 0.6);
-}
-
-.modal-content {
-	background-color: #fff;
-	margin: 10% auto;
-	padding: 2rem;
-	border-radius: 10px;
-	width: 90%;
-	max-width: 800px;
-	animation: modalFadeIn 0.3s;
-}
-
-.close-btn {
-	color: #aaa;
-	float: right;
-	font-size: 28px;
-	font-weight: bold;
-	cursor: pointer;
-}
-
-#dichtheid-tabel {
-	width: 100%;
-	border-collapse: collapse;
-	margin-top: 1rem;
-}
-
-#dichtheid-tabel th, #dichtheid-tabel td {
-	border: 1px solid var(--gray-300);
-	padding: 0.75rem;
-	text-align: left;
-}
-
-#dichtheid-tabel th {
-	background-color: var(--gray-100);
-}
-
-@keyframes modalFadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(-20px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-/* Resultaten Sectie */
-
-#resultaten-overzicht {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	margin: 2rem 0;
-}
-
-.resultaat-item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	background: white;
-	padding: 1rem;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.resultaat-item span {
-	font-size: 1.2rem;
-	font-weight: 600;
-}
-
-.resultaat-percentage {
-	font-size: 1.5rem;
-	font-weight: 700;
-	color: var(--school-dark-green);
-}
-
-.resultaat-item.perfect .resultaat-percentage {
-	color: var(--success-green);
-}
+/* --- Overige Componenten --- */
+.drop-container { display: flex; gap: 1rem; }
+.source-list, .target-list { border: 2px dashed var(--gray-300); border-radius: 8px; padding: 1rem; min-height: 200px; width: 50%; }
+.draggable { background-color: white; padding: 0.75rem; border-radius: 6px; cursor: grab; border: 1px solid var(--gray-300); }
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+.modal-content { background-color: #fff; margin: 10% auto; padding: 2rem; border-radius: 10px; width: 90%; max-width: 800px; animation: modalFadeIn 0.3s; }
+.close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+#dichtheid-tabel { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+#dichtheid-tabel th, #dichtheid-tabel td { border: 1px solid var(--gray-300); padding: 0.75rem; text-align: left; }
+#dichtheid-tabel th { background-color: var(--gray-100); }
+@keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+#resultaten-overzicht { display: flex; flex-direction: column; gap: 1rem; margin: 2rem 0; }
+.resultaat-item { display: flex; align-items: center; justify-content: space-between; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.resultaat-item span { font-size: 1.2rem; font-weight: 600; }
+.resultaat-percentage { font-size: 1.5rem; font-weight: 700; color: var(--school-dark-green); }
+.resultaat-item.perfect .resultaat-percentage { color: var(--success-green); }
