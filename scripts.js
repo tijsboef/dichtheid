@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCurrentSection() {
         const section = appState.sections[appState.currentSectionIndex];
-        if (!section) return; // Voorbij laatste sectie
+        if (!section) return; 
         const container = document.getElementById(`${section.id}-vragen`);
         if (!container) return;
         container.innerHTML = '';
@@ -201,14 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         const currentSectionIsComplete = appState.sections[appState.currentSectionIndex]?.isComplete;
-        checkBtn.style.display = currentSectionIsComplete ? 'none' : 'inline-block';
-        nextBtn.style.display = currentSectionIsComplete ? 'inline-block' : 'none';
+        checkBtn.style.display = currentSectionIsComplete || appState.currentSectionIndex >= 3 ? 'none' : 'inline-block';
+        nextBtn.style.display = currentSectionIsComplete && appState.currentSectionIndex < 3 ? 'inline-block' : 'none';
         prevBtn.style.display = appState.currentSectionIndex > 0 ? 'inline-block' : 'none';
 
         if (appState.currentSectionIndex >= 3) {
-            checkBtn.style.display = 'none';
-            prevBtn.style.display = 'inline-block';
-            nextBtn.style.display = 'none';
             renderResults();
         }
     }
@@ -267,29 +264,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const qId = exerciseEl.dataset.questionId;
         const qData = findQuestionById(qId);
         
-        if (qData.type === 'mc') {
-            return exerciseEl.querySelector('select').value;
-        }
-        if (qData.type === 'formula') {
-            const selects = exerciseEl.querySelectorAll('select');
-            // GECORRIGEERDE LOGICA HIER:
-            return `${selects[0].value}=${selects[1].value}/${selects[2].value}`;
-        }
-        if (qData.type === 'sort') {
-            return Array.from(exerciseEl.querySelectorAll('.target-list .draggable')).map(d => d.textContent).join(',');
-        }
+        if (qData.type === 'mc') { return exerciseEl.querySelector('select').value; }
+        if (qData.type === 'formula') { const selects = exerciseEl.querySelectorAll('select'); return `${selects[0].value}=${selects[1].value}/${selects[2].value}`; }
+        if (qData.type === 'sort') { return Array.from(exerciseEl.querySelectorAll('.target-list .draggable')).map(d => d.textContent).join(','); }
+        
         if (qId.startsWith('s') || qId.startsWith('c')) { // Stappenplan
-            const antwoord = exerciseEl.querySelector('.antwoord-input').value.trim().replace(',', '.');
+            const antwoord = exerciseEl.querySelector('.antwoord-input').value.trim();
             const stofInput = exerciseEl.querySelector('.stof-input');
             const stof = stofInput ? stofInput.value.trim() : null;
             return { antwoord, stof };
         }
         return '';
     }
-
+    
+    // --- GECORRIGEERDE FUNCTIE ---
     function checkAnswer(userAnswer, questionData) {
         if (typeof userAnswer === 'object' && userAnswer !== null) { // Stappenplan
-            let isCorrect = userAnswer.antwoord === questionData.answer;
+            let isCorrect = compareNumericAnswers(userAnswer.antwoord, questionData.answer);
             if (questionData.stof) {
                 isCorrect = isCorrect && userAnswer.stof.toLowerCase() === questionData.stof.toLowerCase();
             }
@@ -299,16 +290,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function compareNumericAnswers(userStr, correctStr) {
+        const userNum = parseFloat(userStr.replace(',', '.'));
+        const correctNum = parseFloat(correctStr);
+
+        if (isNaN(userNum) || isNaN(correctNum)) return false;
+
+        const tolerance = 0.02; // Marge voor kleine afrondingsverschillen
+        return Math.abs(userNum - correctNum) <= tolerance;
+    }
+
     function findQuestionById(id) {
         for (const category in questionDB) {
             if(category === 'simulatie') {
                  for (const set in questionDB.simulatie) {
-                    const found = questionDB.simulatie[set].find(q => q.id === id);
-                    if (found) return found;
+                    const found = questionDB.simulatie[set].find(q => q.id === id); if (found) return found;
                 }
             } else {
-                const found = questionDB[category].find(q => q.id === id);
-                if (found) return found;
+                const found = questionDB[category].find(q => q.id === id); if (found) return found;
             }
         }
     }
@@ -332,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 appState.totalCompletions++;
                 localStorage.setItem('dichtheidCompletions', appState.totalCompletions);
                 appState.currentSectionIndex++;
-                setupNewSession(); // Setup voor de volgende keer, maar toon nu resultaten
+                // setupNewSession() wordt nu hier niet aangeroepen, pas bij reset
             } else {
                 appState.currentSectionIndex++;
             }
@@ -365,11 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }));
     document.getElementById('reset-btn')?.addEventListener('click', () => {
         appState.currentSectionIndex = 0;
-        setupNewSession(); // Maakt een compleet nieuwe sessie aan
+        setupNewSession();
         renderCurrentSection();
         updateUI();
     });
-    // Modal listeners
     document.getElementById('toggle-table-btn').onclick = () => modal.style.display = "block";
     document.querySelector('.close-btn').onclick = () => modal.style.display = "none";
     window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
