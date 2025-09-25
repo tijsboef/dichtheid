@@ -3,68 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oefenen met Dichtheid</title>
+    <title>Dichtheid Pro - Adaptieve Oefenmodule</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <header class="container">
-        <h1>Dichtheid 密度</h1>
-        <p>Doorloop de drie secties om je kennis over dichtheid te testen en te verbeteren.</p>
-        <button id="toggle-table-btn" class="btn-secondary">Toon Dichtheidstabel</button>
-    </header>
-
-    <main class="container">
-        <section id="theorie-sectie" class="content-sectie">
-            <h2>Sectie 1: De Basis van Dichtheid</h2>
-            <div id="theorie-vragen">
-                </div>
-            <button class="btn-primary check-answers" data-section="theorie">Controleer Antwoorden</button>
-        </section>
-
-        <section id="simulatie-sectie" class="content-sectie" style="display:none;">
-            <h2>Sectie 2: Oefenen met de Simulatie</h2>
-            <div class="instructies">
-                <p><strong>Instructies:</strong> Open de simulatie hieronder en ga naar het onderdeel <strong>"Mysterieuze Blokken"</strong>. Kies een van de sets (Set 1, 2 of 3) en gebruik de weegschaal en het waterbassin om de massa en het volume van de blokken te bepalen. Beantwoord daarna de vragen.</p>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Dichtheid Pro</h2>
             </div>
-            <div class="simulation-container">
-                <iframe src="https://phet.colorado.edu/sims/html/density/latest/density_nl.html"
-                        width="100%" height="500" allowfullscreen></iframe>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-section="0">
+                    <span class="nav-icon">📘</span> Sectie 1: Theorie
+                    <div class="progress-bar-container"><div class="progress-bar"></div></div>
+                </button>
+                <button class="nav-btn" data-section="1" disabled>
+                    <span class="nav-icon">🔬</span> Sectie 2: Simulatie
+                    <div class="progress-bar-container"><div class="progress-bar"></div></div>
+                </button>
+                <button class="nav-btn" data-section="2" disabled>
+                    <span class="nav-icon">🧠</span> Sectie 3: Controle
+                    <div class="progress-bar-container"><div class="progress-bar"></div></div>
+                </button>
+                <button class="nav-btn" data-section="3" disabled>
+                    <span class="nav-icon">🏆</span> Resultaten
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="toggle-table-btn" class="btn btn-secondary">Dichtheidstabel</button>
             </div>
-            <div id="simulatie-vragen">
-                 </div>
-             <div class="set-selector">
-                Kies een set:
-                <button class="btn-secondary set-btn" data-set="1">Set 1</button>
-                <button class="btn-secondary set-btn" data-set="2">Set 2</button>
-                <button class="btn-secondary set-btn" data-set="3">Set 3</button>
-            </div>
-            <button class="btn-primary check-answers" data-section="simulatie">Controleer Antwoorden</button>
-        </section>
+        </aside>
 
-        <section id="controle-sectie" class="content-sectie" style="display:none;">
-            <h2>Sectie 3: Controlevragen</h2>
-            <p>Bereken de dichtheid en beantwoord de vragen zonder de simulatie.</p>
-            <div id="controle-vragen">
-                </div>
-            <button class="btn-primary check-answers" data-section="controle">Controleer Antwoorden</button>
-        </section>
-    </main>
+        <main class="main-content">
+            <header class="main-header">
+                <h1 id="main-title">Sectie 1: De Basis van Dichtheid</h1>
+                <div id="completion-counter">Voltooid: 0 keer</div>
+            </header>
+            
+            <div id="content-container">
+                <section id="theorie-sectie" class="content-sectie active">
+                    <div id="theorie-vragen" class="vragen-container"></div>
+                </section>
+                
+                <section id="simulatie-sectie" class="content-sectie">
+                    <div class="instructies">
+                        <strong>Instructies:</strong> Gebruik de <strong>"Mysterieuze Blokken"</strong> in de simulatie om de vragen op te lossen.
+                    </div>
+                    <div class="simulation-container">
+                        <iframe src="https://phet.colorado.edu/sims/html/density/latest/density_nl.html" width="100%" height="500" allowfullscreen></iframe>
+                    </div>
+                    <div class="set-selector">
+                        Kies een set:
+                        <button class="btn btn-secondary set-btn active" data-set="1">Set 1</button>
+                        <button class="btn btn-secondary set-btn" data-set="2">Set 2</button>
+                        <button class="btn btn-secondary set-btn" data-set="3">Set 3</button>
+                    </div>
+                    <div id="simulatie-vragen" class="vragen-container"></div>
+                </section>
+
+                <section id="controle-sectie" class="content-sectie">
+                    <div id="controle-vragen" class="vragen-container"></div>
+                </section>
+                
+                <section id="resultaten-sectie" class="content-sectie">
+                    <h2>🏆 Jouw Resultaten</h2>
+                    <p>Goed gedaan! Je hebt alle secties voltooid. Hier is je overzicht:</p>
+                    <div id="resultaten-overzicht"></div>
+                    <button id="reset-btn" class="btn btn-primary">Start opnieuw met nieuwe vragen</button>
+                </section>
+            </div>
+            
+            <footer class="main-footer">
+                <button id="vorige-sectie-btn" class="btn btn-secondary" style="display: none;">Vorige Sectie</button>
+                <button id="check-answers-btn" class="btn btn-primary">Controleer Antwoorden</button>
+                <button id="volgende-sectie-btn" class="btn btn-primary" style="display: none;">Volgende Sectie</button>
+            </footer>
+        </main>
+    </div>
+
+    <div id="dichtheid-modal" class="modal"><div class="modal-content"><span class="close-btn">&times;</span><h2>Dichtheidstabel</h2><table id="dichtheid-tabel"></table></div></div>
     
-    <div class="container navigatie">
-        <button id="volgende-sectie-btn" class="btn-primary">Volgende Sectie</button>
-    </div>
-
-    <div id="dichtheid-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Dichtheidstabel</h2>
-            <table id="dichtheid-tabel">
-                </table>
-        </div>
-    </div>
-
     <script src="scripts.js"></script>
 </body>
 </html>
