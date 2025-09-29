@@ -132,3 +132,4 @@ input:focus, select:focus { border-color: var(--primary-blue); outline: none; }
 .resultaat-item span { font-size: 1.2rem; font-weight: 600; }
 .resultaat-percentage { font-size: 1.5rem; font-weight: 700; color: var(--school-dark-green); }
 .resultaat-item.perfect .resultaat-percentage { color: var(--success-green); }
+.feedback-detail { font-size: 0.9rem; color: var(--gray-600); margin-left: 1.5rem; }
