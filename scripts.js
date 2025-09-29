@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 1. STATE MANAGEMENT & CONFIG
     // =================================================================================
-    const APP_VERSION = "1.8"; // Verhoogd om localStorage te resetten
+    const APP_VERSION = "1.9"; // Verhoogd om localStorage te resetten
     let appState = {};
     const MAX_COMPLETIONS = 4;
 
@@ -324,11 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         container.innerHTML = '';
         if (section.id === 'simulatie') {
-            document.querySelector('#simulatie-sectie .set-selector').style.display = 'none';
             const q = section.questions[section.currentQuestionIndex];
             container.innerHTML += generateQuestionHTML(q);
         } else {
-             document.querySelector('#simulatie-sectie .set-selector').style.display = 'none';
             section.questions.forEach(q => container.innerHTML += generateQuestionHTML(q));
         }
         setupDragAndDrop();
