@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 1. STATE MANAGEMENT & CONFIG
     // =================================================================================
-    const APP_VERSION = "1.9"; // Verhoogd om localStorage te resetten
+    const APP_VERSION = "2.0"; // Verhoogd om localStorage te resetten
     let appState = {};
     const MAX_COMPLETIONS = 4;
 
@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSectionIndex: 0,
         totalCompletions: 0,
         sections: [
-            { id: 'theorie', title: 'Sectie 1: De Basis van Dichtheid', isComplete: false, attempts: 0, questionsCorrect: 0, questionsTotal: 0 },
-            { id: 'simulatie', title: 'Sectie 2: Oefenen met de Simulatie', isComplete: false, attempts: 0, currentQuestionIndex: 0, questions: [] },
-            { id: 'controle', title: 'Sectie 3: Controlevragen', isComplete: false, attempts: 0, questionsCorrect: 0, questionsTotal: 0 }
+            { id: 'theorie', title: 'Sectie 1: De Basis van Dichtheid', isComplete: false, attempts: 0, questions: [], errorLog: {} },
+            { id: 'simulatie', title: 'Sectie 2: Oefenen met de Simulatie', isComplete: false, currentQuestionIndex: 0, questions: [] },
+            { id: 'controle', title: 'Sectie 3: Controlevragen', isComplete: false, attempts: 0, questions: [], errorLog: {} }
         ]
     };
 
@@ -39,33 +39,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // =================================================================================
     // 2. VRAGEN DATABASE & DATA
     // =================================================================================
-    const dichtheidTabelData = [
-        { stof: "Lucht", dichtheid: "0.0013" }, { stof: "Kurk", dichtheid: "0.25" }, { stof: "Hout", dichtheid: "0.40" },
-        { stof: "Benzine", dichtheid: "0.72" }, { stof: "Alcohol", dichtheid: "0.80" }, { stof: "Spiritus", dichtheid: "0.80" },
-        { stof: "IJs", dichtheid: "0.92" }, { stof: "Mens", dichtheid: "0.95" }, { stof: "Water", dichtheid: "1.00" },
-        { stof: "Perspex", dichtheid: "1.2" }, { stof: "Suiker", dichtheid: "1.58" }, { stof: "Keukenzout", dichtheid: "2.17" },
-        { stof: "Glas", dichtheid: "2.6" }, { stof: "Aluminium", dichtheid: "2.70" }, { stof: "Diamant", dichtheid: "3.51" },
-        { stof: "Titanium", dichtheid: "4.50" }, { stof: "Tin", dichtheid: "7.28" }, { stof: "Staal", dichtheid: "7.80" },
-        { stof: "IJzer", dichtheid: "7.87" }, { stof: "Koper", dichtheid: "8.96" }, { stof: "Lood", dichtheid: "11.32" },
-        { stof: "Goud", dichtheid: "19.32" }, { stof: "Kwik", dichtheid: "13.5" }
-    ];
+    const dichtheidTabelData = [ { stof: "Hout", dichtheid: "0.40" }, { stof: "Benzine", dichtheid: "0.72" }, { stof: "IJs", dichtheid: "0.92" }, { stof: "Water", dichtheid: "1.00" }, { stof: "Aluminium", dichtheid: "2.70" }, { stof: "Staal", dichtheid: "7.80" }, { stof: "Koper", dichtheid: "8.96" }, { stof: "Lood", dichtheid: "11.32" }, { stof: "Goud", dichtheid: "19.32" }, { stof: "Diamant", dichtheid: "3.51" }, { stof: "Titanium", dichtheid: "4.50" }, { stof: "Mens", dichtheid: "0.95" } ];
     const grootheden = ['ρ', 'm', 'V'], eenheden = ['g', 'kg', 'cm³', 'L', 'g/cm³', 'kg/L'], operatoren = ['/', '*', '+', '-'];
 
     const questionDB = {
         theorie: [
-            { id: 't1_v1', type: 'mc', prompt: "Wat beschrijft dichtheid het best?", options: ["De zwaarte van een object", "Massa per volume-eenheid", "De grootte van een object"], answer: "Massa per volume-eenheid", hints: ["Denk aan de eenheid: g/cm³.", "Het is een verhouding.", "Dichtheid is massa gedeeld door..."] },
-            { id: 't2_v1', type: 'formula', prompt: "Stel de formule voor dichtheid samen.", answer: "ρ=m/V", hints: ["ρ (rho) is het symbool voor dichtheid.", "Massa wordt gedeeld door volume.", "De formule is rho = m / V."] },
-            { id: 't3_v1', type: 'sort', prompt: "Zet het stappenplan in de juiste volgorde.", items: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord + eenheid"], answer: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord + eenheid", hints: ["Je begint altijd met inventariseren.", "De formule komt vóór het invullen.", "Het antwoord is de laatste stap."] }
+            { id: 't1_v1', type: 'mc', prompt: "Wat beschrijft dichtheid het best?", options: ["De zwaarte van een object", "Massa per volume-eenheid", "De grootte van een object"], answer: "Massa per volume-eenheid", errorType: "definitie", hints: ["Denk aan de eenheid: g/cm³.", "Het is een verhouding.", "Dichtheid is massa gedeeld door..."] },
+            { id: 't2_v1', type: 'formula', prompt: "Stel de formule voor dichtheid samen.", answer: "ρ=m/V", errorType: "formule", hints: ["ρ (rho) is het symbool voor dichtheid.", "Massa wordt gedeeld door volume.", "De formule is rho = m / V."] },
+            { id: 't3_v1', type: 'sort', prompt: "Zet het stappenplan in de juiste volgorde.", items: ["Gegevens noteren", "Formule noteren", "Formule invullen", "Antwoord + eenheid"], answer: "Gegevens noteren,Formule noteren,Formule invullen,Antwoord + eenheid", errorType: "stappenplan", hints: ["Je begint altijd met inventariseren.", "De formule komt vóór het invullen.", "Het antwoord is de laatste stap."] }
         ],
         simulatie: {
-            set1: [{id:'s1_1',set:1,type:'stappenplan',k:'Paars',m:'19.3',v:'5.5',d:'3.51',s:'Diamant'}, {id:'s1_2',set:1,type:'stappenplan',k:'Blauw',m:'0.4',v:'1',d:'0.40',s:'Hout'}, {id:'s1_3',set:1,type:'stappenplan',k:'Geel',m:'19.32',v:'1',d:'19.32',s:'Goud'}, {id:'s1_4',set:1,type:'stappenplan',k:'Rood',m:'5',v:'5',d:'1.00',s:'Water'}, {id:'s1_5',set:1,type:'stappenplan',k:'Groen',m:'2.8',v:'7',d:'0.40',s:'Hout'}],
-            set2: [{id:'s2_1',set:2,type:'stappenplan',k:'Lichtbruin',m:'18',v:'1.59',d:'11.32',s:'Lood'}, {id:'s2_2',set:2,type:'stappenplan',k:'Donkerbruin',m:'10.8',v:'4',d:'2.70',s:'Aluminium'}, {id:'s2_3',set:2,type:'stappenplan',k:'Groen',m:'2.7',v:'1',d:'2.70',s:'Aluminium'}, {id:'s2_4',set:2,type:'stappenplan',k:'Roze',m:'18',v:'4',d:'4.50',s:'Titanium'}, {id:'s2_5',set:2,type:'stappenplan',k:'Lila',m:'44.8',v:'5',d:'8.96',s:'Koper'}],
-            set3: [{id:'s3_1',set:3,type:'stappenplan',k:'Bordeaux',m:'2.85',v:'3',d:'0.95',s:'Mens'}, {id:'s3_2',set:3,type:'stappenplan',k:'Grijs',m:'6',v:'6',d:'1.00',s:'Water'}, {id:'s3_3',set:3,type:'stappenplan',k:'Beige',m:'23.4',v:'3',d:'7.80',s:'Staal'}, {id:'s3_4',set:3,type:'stappenplan',k:'Camel',m:'2',v:'5',d:'0.40',s:'Hout'}, {id:'s3_5',set:3,type:'stappenplan',k:'Wit',m:'6',v:'6.32',d:'0.95',s:'Mens'}]
+            set1: [{id:'s1_1',set:1,type:'stappenplan',k:'paarse',m:'19.3',v:'5.5',d:'3.51',s:'Diamant'}, {id:'s1_2',set:1,type:'stappenplan',k:'blauwe',m:'0.4',v:'1',d:'0.40',s:'Hout'}, {id:'s1_3',set:1,type:'stappenplan',k:'gele',m:'19.32',v:'1',d:'19.32',s:'Goud'}, {id:'s1_4',set:1,type:'stappenplan',k:'rode',m:'5',v:'5',d:'1.00',s:'Water'}, {id:'s1_5',set:1,type:'stappenplan',k:'groene',m:'2.8',v:'7',d:'0.40',s:'Hout'}],
+            set2: [{id:'s2_1',set:2,type:'stappenplan',k:'lichtbruine',m:'18',v:'1.59',d:'11.32',s:'Lood'}, {id:'s2_2',set:2,type:'stappenplan',k:'donkerbruine',m:'10.8',v:'4',d:'2.70',s:'Aluminium'}, {id:'s2_3',set:2,type:'stappenplan',k:'groene',m:'2.7',v:'1',d:'2.70',s:'Aluminium'}, {id:'s2_4',set:2,type:'stappenplan',k:'roze',m:'18',v:'4',d:'4.50',s:'Titanium'}, {id:'s2_5',set:2,type:'stappenplan',k:'lila',m:'44.8',v:'5',d:'8.96',s:'Koper'}],
+            set3: [{id:'s3_1',set:3,type:'stappenplan',k:'bordeauxrode',m:'2.85',v:'3',d:'0.95',s:'Mens'}, {id:'s3_2',set:3,type:'stappenplan',k:'grijze',m:'6',v:'6',d:'1.00',s:'Water'}, {id:'s3_3',set:3,type:'stappenplan',k:'beige',m:'23.4',v:'3',d:'7.80',s:'Staal'}, {id:'s3_4',set:3,type:'stappenplan',k:'camel',m:'2',v:'5',d:'0.40',s:'Hout'}, {id:'s3_5',set:3,type:'stappenplan',k:'witte',m:'6',v:'6.32',d:'0.95',s:'Mens'}]
         },
         controle: [
-            { id: 'c1_v1', type: 'stappenplan', prompt: "Een blokje heeft 270 g massa en 100 cm³ volume. Bereken de dichtheid.", data: {m:'270', v:'100'}, answer: '2.7', hints: ["Formule: ρ = m / V.", "Deel 270 door 100.", "Het antwoord is 2,7 g/cm³."]},
-            { id: 'c2_v1', type: 'stappenplan', prompt: "Een gouden ring heeft 2 cm³ volume. Bereken de massa. Zoek de dichtheid van goud op in de tabel.", data: {p:'19.32', v:'2'}, answer: '38.64', hints: ["Zoek eerst de dichtheid van goud.", "Formule: m = ρ * V.", "Vermenigvuldig 19,32 met 2."]},
-            { id: 'c3_v1', type: 'stappenplan', prompt: "Een blokje van 780 g heeft 100 cm³ volume. Bereken de dichtheid en benoem het materiaal.", data: {m:'780', v:'100'}, answer: '7.8', stof: 'Staal', hints: ["Bereken eerst de dichtheid.", "Vergelijk je antwoord met de tabel.", "De dichtheid is 7,8 g/cm³, wat staal is."]}
+            { id: 'c1_v1', type: 'stappenplan', prompt: "Een blokje heeft 270 g massa en 100 cm³ volume. Bereken de dichtheid.", data: {m:'270', v:'100'}, answer: '2.7', errorType: "berekening", hints: ["Formule: ρ = m / V.", "Deel 270 door 100.", "Het antwoord is 2,7 g/cm³."]},
+            { id: 'c2_v1', type: 'stappenplan', prompt: "Een gouden ring heeft 2 cm³ volume. Bereken de massa. Zoek de dichtheid van goud op in de tabel.", data: {p:'19.32', v:'2'}, answer: '38.64', errorType: "formule_ombouwen", hints: ["Zoek eerst de dichtheid van goud.", "Formule: m = ρ * V.", "Vermenigvuldig 19,32 met 2."]},
+            { id: 'c3_v1', type: 'stappenplan', prompt: "Een blokje van 780 g heeft 100 cm³ volume. Bereken de dichtheid en benoem het materiaal.", data: {m:'780', v:'100'}, answer: '7.8', stof: 'Staal', errorType: "tabel_aflezen", hints: ["Bereken eerst de dichtheid.", "Vergelijk je antwoord met de tabel.", "De dichtheid is 7,8 g/cm³, wat staal is."]}
         ]
     };
 
@@ -79,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function init() {
         loadState();
-        if (!appState.appVersion || appState.appVersion !== APP_VERSION) {
+        if (!appState.appVersion || appState.appVersion !== APP_VERSION || !appState.sections[0].questions || appState.sections[0].questions.length === 0) {
             setupNewSession();
         }
         if (appState.totalCompletions >= MAX_COMPLETIONS) {
@@ -97,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.totalCompletions = completions;
 
         const allSimQuestions = [...questionDB.simulatie.set1, ...questionDB.simulatie.set2, ...questionDB.simulatie.set3];
-        appState.sections[1].questions = allSimQuestions.sort(() => 0.5 - Math.random()).slice(0, 5).map(q => ({...q, attempts: 0, isCorrect: false, isAnswered: false}));
+        appState.sections[1].questions = allSimQuestions.sort(() => 0.5 - Math.random()).slice(0, 5).map(q => ({...q, attempts: 0, isCorrect: false, isAnswered: false, errorLog: {}}));
 
         const theorieVragen = groupByPrefix(questionDB.theorie.map(q => q.id)).map(g => g[Math.floor(Math.random() * g.length)]);
         appState.sections[0].questions = theorieVragen.map(id => ({...findQuestionById(id), id, attempts: 0, isCorrect: false}));
@@ -123,13 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 let score = 0;
                 if(section.isComplete) {
-                    if (section.id === 'simulatie' || section.id === 'controle') {
-                        const correctCount = section.questions.filter(q => q.isCorrect).length;
-                        const total = section.questions.length || section.questionsTotal;
-                         score = total > 0 ? (correctCount / total) * 100 : 0;
-                    } else {
-                        score = Math.max(10, 100 - (section.attempts - 1) * 25);
-                    }
+                    const correctCount = section.questions.filter(q => q.isCorrect).length;
+                    const total = section.questions.length || section.questionsTotal;
+                    score = total > 0 ? (correctCount / total) * 100 : 0;
                 }
                 const progressBar = btn.querySelector('.progress-bar');
                 progressBar.style.width = `${score}%`;
@@ -170,40 +157,56 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderResults() {
         const container = document.getElementById('resultaten-overzicht');
         container.innerHTML = '';
+        const errorMessages = {
+            definitie: "de definities",
+            formule: "het gebruik van de formule",
+            stappenplan: "de volgorde van het stappenplan",
+            berekening: "het maken van berekeningen",
+            formule_ombouwen: "het ombouwen van de formule",
+            tabel_aflezen: "het aflezen van de tabel"
+        };
+
         appState.sections.forEach(sec => {
-            let score;
-            if (sec.id === 'simulatie' || sec.id === 'controle') {
-                const correctCount = sec.questions.filter(q => q.isCorrect).length;
-                const total = sec.questions.length || sec.questionsTotal;
-                score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-            } else {
-                score = sec.isComplete ? Math.max(0, 100 - (sec.attempts - 1) * 25) : 0;
+            const correctCount = sec.questions.filter(q => q.isCorrect).length;
+            const total = sec.questions.length || sec.questionsTotal;
+            const score = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+            
+            let feedback = '';
+            if (score < 100) {
+                const errorCounts = {};
+                sec.questions.filter(q => !q.isCorrect).forEach(q => {
+                    const type = q.errorType || 'berekening';
+                    errorCounts[type] = (errorCounts[type] || 0) + 1;
+                });
+                const topError = Object.keys(errorCounts).sort((a,b) => errorCounts[b] - errorCounts[a])[0];
+                if(topError) feedback = `<div class="feedback-detail">💡 Tip: Oefen nog eens met ${errorMessages[topError]}.</div>`;
             }
-            container.innerHTML += `<div class="resultaat-item ${score === 100 ? 'perfect' : ''}"><span>${sec.title}</span><span class="resultaat-percentage">${score}%</span></div>`;
+
+            container.innerHTML += `<div class="resultaat-item ${score === 100 ? 'perfect' : ''}"><div><span>${sec.title}</span>${feedback}</div><span class="resultaat-percentage">${score}%</span></div>`;
         });
     }
 
     function checkAnswers() {
         const section = appState.sections[appState.currentSectionIndex];
+        let allCorrect = true;
+
+        const questionsContainer = document.getElementById(`${section.id}-vragen`);
+        const exerciseElements = questionsContainer.querySelectorAll('.exercise');
         
-        if (section.id === 'simulatie') {
-            checkSimulatieAnswer();
-        } else {
-            let allCorrect = true;
-            const questionsContainer = document.getElementById(`${section.id}-vragen`);
-            const exerciseElements = questionsContainer.querySelectorAll('.exercise');
+        section.questions.forEach((q, index) => {
+            const exEl = exerciseElements[index];
+            const userAnswer = getUserAnswer(exEl, q.type);
+            const isCorrect = checkAnswer(userAnswer, q);
             
-            exerciseElements.forEach(exEl => {
-                const qId = exEl.dataset.questionId;
-                const questionData = findQuestionById(qId);
-                const userAnswer = getUserAnswer(exEl, questionData.type);
-                if (!checkAnswer(userAnswer, questionData)) allCorrect = false;
-                displayFeedback(exEl, checkAnswer(userAnswer, questionData), questionData);
-            });
+            if(!isCorrect) allCorrect = false;
+            q.isCorrect = isCorrect;
             
-            section.attempts = (section.attempts || 0) + 1;
-            if (allCorrect) section.isComplete = true;
-        }
+            displayFeedback(exEl, isCorrect, q);
+        });
+        
+        section.attempts = (section.attempts || 0) + 1;
+        if (allCorrect) section.isComplete = true;
+        
         saveState();
         updateUI();
     }
@@ -241,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayFeedback(el, isCorrect, qData) {
         const feedbackEl = el.querySelector('.feedback');
-        el.dataset.attempts = (parseInt(el.dataset.attempts) || 0) + 1;
+        qData.attempts++;
         
         if(isCorrect) {
             feedbackEl.innerHTML = `✅ Correct!`;
@@ -250,10 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             let hintHTML = '';
             if (qData.hints) {
-                const attempts = parseInt(el.dataset.attempts);
-                if (attempts === 2) hintHTML = `<div class="hint">💡 Hint 1: ${qData.hints[0]}</div>`;
-                if (attempts === 3) hintHTML = `<div class="hint">💡 Hint 2: ${qData.hints[1]}</div>`;
-                if (attempts >= 4) hintHTML = `<div class="hint">💡 Antwoord: ${qData.hints[2]}</div>`;
+                if (qData.attempts === 2) hintHTML = `<div class="hint">💡 Hint 1: ${qData.hints[0]}</div>`;
+                if (qData.attempts === 3) hintHTML = `<div class="hint">💡 Hint 2: ${qData.hints[1]}</div>`;
+                if (qData.attempts >= 4) hintHTML = `<div class="hint">💡 Antwoord: ${qData.hints[2]}</div>`;
             }
             feedbackEl.innerHTML = `❌ Probeer het nog eens. ${hintHTML}`;
             feedbackEl.className = 'feedback incorrect';
@@ -264,23 +266,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayGranularFeedback(el, densityCorrect, stofCorrect, qData) {
         const feedbackEl = el.querySelector('.feedback');
         let feedbackHTML = '';
-
-        if (densityCorrect) {
-            feedbackHTML += `✅ Je berekening van de dichtheid is correct!<br>`;
-        } else {
-            feedbackHTML += `❌ De berekende dichtheid klopt niet. `;
-        }
-
-        if (stofCorrect) {
-            feedbackHTML += `✅ De naam van de stof is correct!`;
-        } else {
-            feedbackHTML += `❌ De naam van de stof klopt niet.`;
-        }
-        
-        if (qData.attempts >= 2) {
-            feedbackHTML += `<div class="hint">💡 Hint: Controleer je meting van massa en volume in de simulatie en vergelijk de berekende dichtheid goed met de tabel.</div>`
-        }
-
+        if (densityCorrect) feedbackHTML += `✅ Je berekening van de dichtheid is correct!<br>`;
+        else feedbackHTML += `❌ De berekende dichtheid klopt niet. `;
+        if (stofCorrect) feedbackHTML += `✅ De naam van de stof is correct!`;
+        else feedbackHTML += `❌ De naam van de stof klopt niet.`;
+        if (qData.attempts >= 2) feedbackHTML += `<div class="hint">💡 Hint: Controleer je meting en vergelijk de berekende dichtheid goed met de tabel.</div>`
         feedbackEl.innerHTML = feedbackHTML;
         feedbackEl.className = 'feedback incorrect';
         feedbackEl.style.display = 'block';
@@ -301,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkAnswer(userAnswer, questionData) {
         if (questionData.type === 'stappenplan') {
             const densityCorrect = compareNumericAnswers(userAnswer.antwoord, questionData.d || questionData.answer);
-            const stofCorrect = !questionData.s || userAnswer.stof.toLowerCase() === questionData.s.toLowerCase();
+            const stofCorrect = !questionData.s && !questionData.stof || userAnswer.stof.toLowerCase() === (questionData.s || questionData.stof).toLowerCase();
             return { densityCorrect, stofCorrect, isFullyCorrect: densityCorrect && stofCorrect };
         } else {
             return userAnswer.toLowerCase().replace(/\s/g, '') === questionData.answer.toLowerCase().replace(/\s/g, '');
@@ -337,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (q.type === 'formula') { const p = ['ρ', 'm', 'V']; const cS=()=>`<select><option value="">?</option>${p.map(i => `<option value="${i}">${i}</option>`).join('')}</select>`; content = `<div class="formula-wrapper"><div class="formula-part">${cS()}</div><span class="equals">=</span><div class="formula-fraction"><div class="numerator">${cS()}</div><div class="denominator">${cS()}</div></div></div>`;
         } else if (q.type === 'sort') { let s = [...q.items]; while (s.join(',') === q.answer) { s.sort(() => 0.5 - Math.random()); } content = `<div class="sort-container"><div class="step-labels"><div>Stap 1</div><div>Stap 2</div><div>Stap 3</div><div>Stap 4</div></div><div class="sort-list">${s.map(i => `<div class="draggable" draggable="true">${i}</div>`).join('')}</div></div>`;
         } else { const stofInput = q.s || q.stof ? `<hr><div class="stap-rij"><label>De stof is:</label><input class="stof-input" type="text" placeholder="Naam materiaal"></div>` : ''; content = `<div class="stappenplan-container"><div class="stap-rij"><label>Stap 1:</label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(eenheden)}</div><div class="stap-rij"><label></label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(eenheden)}</div><div class="stap-rij"><label>Stap 2:</label>${createDropdown(grootheden)}<span>=</span>${createDropdown(grootheden)}${createDropdown(operatoren)}${createDropdown(grootheden)}</div><div class="stap-rij"><label>Stap 3:</label>${createDropdown(grootheden)}<span>=</span><input type="text" placeholder="waarde">${createDropdown(operatoren)}<input type="text" placeholder="waarde"></div><div class="stap-rij"><label>Stap 4:</label>${createDropdown(grootheden)}<span>=</span><input class="antwoord-input" type="text" placeholder="antwoord">${createDropdown(eenheden)}</div>${stofInput}</div>`; }
-        let prompt = q.prompt || `Bereken de dichtheid van het ${q.k}e blok.`;
+        let prompt = q.prompt || `Bereken de dichtheid van het ${q.k}e blok (${q.id}).`;
         if (q.set) prompt = `<div class="instructies">Selecteer <strong>Set ${q.set}</strong> in de simulatie.</div>` + prompt;
         return `<div class="exercise" data-question-id="${q.id}" data-attempts="0"><h3>${prompt}</h3>${content}<div class="feedback"></div></div>`;
     }
