@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             displayGranularFeedback(exEl, densityCorrect, stofCorrect, question);
             if (question.attempts >= 3) {
-                question.isAnswered = true; // Na 3 pogingen, ga door
+                question.isAnswered = true;
                 const feedbackEl = exEl.querySelector('.feedback');
                 feedbackEl.innerHTML += `<div class="hint">💡 Het juiste antwoord is <strong>${question.d} g/cm³</strong> voor de stof <strong>${question.s}</strong>. Klik op 'Volgende Vraag'.</div>`;
             }
@@ -333,7 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         setupDragAndDrop();
     }
-
     function generateQuestionHTML(q) {
         let content = '';
         if (q.type === 'mc') { content = `<select><option value="">Kies...</option>${q.options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
