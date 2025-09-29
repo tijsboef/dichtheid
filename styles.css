@@ -24,7 +24,7 @@ body {
     color: var(--gray-800);
     margin: 0;
     line-height: 1.6;
-    overflow: hidden; /* Voorkom dubbele scrollbars */
+    overflow: hidden;
 }
 .app-container {
     display: flex;
