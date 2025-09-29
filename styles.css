@@ -24,7 +24,7 @@ body {
     color: var(--gray-800);
     margin: 0;
     line-height: 1.6;
-    overflow: hidden;
+    overflow: hidden; /* Voorkom dubbele scrollbars */
 }
 .app-container {
     display: flex;
@@ -89,7 +89,7 @@ input:focus, select:focus { border-color: var(--primary-blue); outline: none; }
 
 /* --- Sectie 1: Theorie Vragen Styling --- */
 #theorie-sectie .exercise { min-width: 100%; }
-#theorie-sectie .exercise > select { max-width: 400px; } /* Alleen voor de MC vraag */
+#theorie-sectie .exercise > select { max-width: 400px; }
 .formula-wrapper { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .formula-part select { width: 110px; font-size: 1rem; padding: 0.5rem; }
 .formula-wrapper span.equals { font-size: 2rem; font-weight: bold; }
