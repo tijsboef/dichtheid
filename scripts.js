@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if(section.isComplete) {
                     const correctCount = section.questions.filter(q => q.isCorrect).length;
                     const total = section.questions.length || section.questionsTotal;
-                    score = total > 0 ? (correctCount / total) * 100 : 0;
+                     score = total > 0 ? (correctCount / total) * 100 : 0;
                 }
                 const progressBar = btn.querySelector('.progress-bar');
                 progressBar.style.width = `${score}%`;
@@ -188,25 +188,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAnswers() {
         const section = appState.sections[appState.currentSectionIndex];
-        let allCorrect = true;
-
-        const questionsContainer = document.getElementById(`${section.id}-vragen`);
-        const exerciseElements = questionsContainer.querySelectorAll('.exercise');
         
-        section.questions.forEach((q, index) => {
-            const exEl = exerciseElements[index];
-            const userAnswer = getUserAnswer(exEl, q.type);
-            const isCorrect = checkAnswer(userAnswer, q);
+        if (section.id === 'simulatie') {
+            checkSimulatieAnswer();
+        } else {
+            let allCorrect = true;
+            const questionsContainer = document.getElementById(`${section.id}-vragen`);
+            const exerciseElements = questionsContainer.querySelectorAll('.exercise');
             
-            if(!isCorrect) allCorrect = false;
-            q.isCorrect = isCorrect;
+            section.questions.forEach((q, index) => {
+                const exEl = exerciseElements[index];
+                const userAnswer = getUserAnswer(exEl, q.type);
+                const isCorrect = checkAnswer(userAnswer, q);
+                
+                if(!isCorrect) allCorrect = false;
+                q.isCorrect = isCorrect;
+                
+                displayFeedback(exEl, isCorrect, q);
+            });
             
-            displayFeedback(exEl, isCorrect, q);
-        });
-        
-        section.attempts = (section.attempts || 0) + 1;
-        if (allCorrect) section.isComplete = true;
-        
+            section.attempts = (section.attempts || 0) + 1;
+            if (allCorrect) section.isComplete = true;
+        }
         saveState();
         updateUI();
     }
@@ -244,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayFeedback(el, isCorrect, qData) {
         const feedbackEl = el.querySelector('.feedback');
-        qData.attempts++;
+        qData.attempts = (qData.attempts || 0) + 1;
         
         if(isCorrect) {
             feedbackEl.innerHTML = `✅ Correct!`;
